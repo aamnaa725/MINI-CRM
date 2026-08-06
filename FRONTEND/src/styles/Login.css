@@ -1,0 +1,781 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+
+/* ===========================
+   Global
+=========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+
+body{
+    background:#f7f8fc;
+}
+
+
+/* ===========================
+   Animations
+=========================== */
+
+
+@keyframes fadeInLeft{
+    from{
+        opacity:0;
+        transform:translateX(-60px);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+
+@keyframes fadeInRight{
+    from{
+        opacity:0;
+        transform:translateX(60px);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(40px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+
+@keyframes float{
+
+    0%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-10px);
+    }
+
+    100%{
+        transform:translateY(0);
+    }
+
+}
+
+
+
+/* ===========================
+   Main Container
+=========================== */
+
+
+.container-main{
+
+    display:flex;
+    min-height:100vh;
+
+}
+
+
+
+/* ===========================
+   LEFT PANEL
+=========================== */
+
+
+.left-panel{
+
+    width:50%;
+    background:linear-gradient(
+        135deg,
+        #5B4BFF,
+        #7B61FF
+    );
+
+    color:white;
+
+    padding:50px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+
+    animation:fadeInLeft .9s ease;
+
+}
+
+
+
+/* ===========================
+   Logo
+=========================== */
+
+
+.logo{
+
+    display:flex;
+    align-items:center;
+    gap:15px;
+
+}
+
+
+.logo h2{
+
+    font-size:36px;
+    font-weight:700;
+
+}
+
+
+
+/* ===========================
+   Hero Content
+=========================== */
+
+
+.hero-content{
+
+    animation:fadeUp 1s ease;
+
+}
+
+
+.hero-content h1{
+
+    font-size:52px;
+    line-height:1.2;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.hero-content p{
+
+    width:90%;
+
+    font-size:18px;
+
+    line-height:1.7;
+
+    color:#eeeeee;
+
+}
+
+
+
+/* ===========================
+   Dashboard Image
+=========================== */
+
+
+.dashboard{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin:35px 0;
+
+}
+
+
+
+.dashboard img{
+
+    width:90%;
+
+    max-width:550px;
+
+    border-radius:18px;
+
+    background:#111827;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.25);
+
+
+    animation:float 5s infinite ease-in-out;
+
+    transition:.4s;
+
+}
+
+
+
+.dashboard img:hover{
+
+    transform:scale(1.04);
+
+}
+
+
+
+/* ===========================
+   Trusted Teams
+=========================== */
+
+
+.trusted-teams{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+}
+
+
+
+.avatars{
+
+    display:flex;
+
+}
+
+
+
+.avatars img{
+
+    width:45px;
+
+    height:45px;
+
+    object-fit:cover;
+
+    border-radius:50%;
+
+    border:3px solid white;
+
+    margin-left:-12px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+
+.avatars img:first-child{
+
+    margin-left:0;
+
+}
+
+
+
+.avatars img:hover{
+
+    transform:translateY(-5px);
+
+}
+
+
+
+.team-text h3{
+
+    font-size:18px;
+
+}
+
+
+
+.team-text p{
+
+    font-size:14px;
+
+    color:#eeeeee;
+
+}
+
+
+
+/* ===========================
+   RIGHT PANEL
+=========================== */
+
+
+.right-panel{
+
+    width:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:40px;
+
+    animation:fadeInRight .9s ease;
+
+}
+
+
+
+
+/* ===========================
+   Form Card
+=========================== */
+
+
+.form-container{
+
+    width:100%;
+
+    max-width:480px;
+
+
+    background:white;
+
+
+    padding:45px;
+
+
+    border-radius:20px;
+
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.08);
+
+
+    animation:fadeUp 1s ease;
+
+
+    transition:.35s;
+
+}
+
+
+
+.form-container:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,.12);
+
+}
+
+
+
+/* ===========================
+   Heading
+=========================== */
+
+
+.form-container h2{
+
+    font-size:34px;
+
+    color:#111827;
+
+    margin-bottom:8px;
+
+}
+
+
+
+.form-container p{
+
+    color:#6B7280;
+
+    margin-bottom:30px;
+
+    line-height:1.5;
+
+}
+
+
+
+/* ===========================
+   Form
+=========================== */
+
+
+form{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+/* ===========================
+   Inputs
+=========================== */
+
+
+.input-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+    margin-bottom:18px;
+
+}
+
+
+
+.input-group label{
+
+    margin-bottom:8px;
+
+    font-size:15px;
+
+    font-weight:500;
+
+    color:#374151;
+
+}
+
+
+
+.input-group input{
+
+
+    height:52px;
+
+    border:1px solid #E5E7EB;
+
+    border-radius:12px;
+
+
+    padding:0 16px;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.3s;
+
+
+}
+
+
+
+.input-group input:focus{
+
+    border-color:#5B4BFF;
+
+    box-shadow:
+    0 0 0 4px rgba(91,75,255,.15);
+
+}
+
+
+
+/* ===========================
+ Password
+=========================== */
+
+
+.password-box{
+
+    position:relative;
+
+}
+
+
+
+.password-box input{
+
+    width:100%;
+
+    padding-right:55px;
+
+}
+
+
+
+.password-box button{
+
+    position:absolute;
+
+    right:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    border:none;
+
+    background:none;
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    color:#555;
+
+}
+
+
+
+
+/* ===========================
+ Login Options
+=========================== */
+
+
+.login-options{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin:10px 0 20px;
+
+    font-size:14px;
+
+}
+
+
+
+.login-options label{
+
+    display:flex;
+
+    gap:8px;
+
+    align-items:center;
+
+}
+
+
+
+.login-options a{
+
+    color:#5B4BFF;
+
+    text-decoration:none;
+
+}
+
+
+
+
+/* ===========================
+ Button
+=========================== */
+
+
+.register-btn{
+
+    height:54px;
+
+    border:none;
+
+    border-radius:12px;
+
+
+    background:
+    linear-gradient(
+        135deg,
+        #5B4BFF,
+        #7B61FF
+    );
+
+
+    color:white;
+
+
+    font-size:17px;
+
+    font-weight:600;
+
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+
+.register-btn:hover{
+
+
+    transform:translateY(-3px);
+
+
+    box-shadow:
+    0 12px 25px rgba(91,75,255,.35);
+
+
+}
+
+
+
+
+/* ===========================
+ Register Link
+=========================== */
+
+
+.login-link{
+
+    text-align:center;
+
+    margin-top:25px;
+
+    font-size:15px;
+
+}
+
+
+
+.login-link a{
+
+    color:#5B4BFF;
+
+    font-weight:600;
+
+    text-decoration:none;
+
+}
+
+
+
+
+/* ===========================
+ Responsive
+=========================== */
+
+
+@media(max-width:1100px){
+
+
+.left-panel{
+
+    padding:35px;
+
+}
+
+
+.hero-content h1{
+
+    font-size:40px;
+
+}
+
+
+.form-container{
+
+    padding:35px;
+
+}
+
+
+}
+
+
+
+@media(max-width:900px){
+
+
+.container-main{
+
+    flex-direction:column;
+
+}
+
+
+
+.left-panel{
+
+    display:none;
+
+}
+
+
+
+.right-panel{
+
+    width:100%;
+
+    min-height:100vh;
+
+}
+
+
+
+}
+
+
+
+
+@media(max-width:600px){
+
+
+.right-panel{
+
+    padding:20px;
+
+}
+
+
+
+.form-container{
+
+    padding:25px;
+
+}
+
+
+
+.form-container h2{
+
+    font-size:28px;
+
+}
+
+
+
+}
+.forgot-btn{
+
+    background: none;
+    border: none;
+    color: #4f46e5;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+
+}
+
+
+.forgot-btn:hover{
+
+    text-decoration: underline;
+
+}
+.login-page .left-panel{
+    animation:none;
+}
