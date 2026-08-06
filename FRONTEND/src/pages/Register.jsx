@@ -14,374 +14,392 @@ import "../styles/Register.css";
 function Register() {
 
 
-const [showPassword,setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-const [showConfirmPassword,setShowConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
-const [formData,setFormData] = useState({
+  const [formData, setFormData] = useState({
 
-fullName:"",
-email:"",
-phone:"",
-password:"",
-confirmPassword:""
-
-});
+    FullName: "",
+    EmailAddress: "",
+    PhoneNumber: "",
+    Password: ""
+  });
 
 
 
-const handleChange=(e)=>{
+  const handleChange = (e) => {
 
-setFormData({
+    setFormData({
 
-...formData,
+      ...formData,
 
-[e.target.name]:e.target.value
+      [e.target.name]: e.target.value
 
-});
+    });
 
-};
+  };
+
+  async function CreateUserData(userData) {
+    try {
+      const response = await fetch('http://127.0.0.1:3000/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json' // Tells the server to expect JSON
+        },
+        body: JSON.stringify(userData)
+      });
+
+      // Always check if the response status is OK (200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json(); // Parse JSON data
+      console.log(data);
+    } catch (error) {
+      console.error('Fetch failed:', error.message);
+    }
+  }
 
 
 
 
-const handleSubmit=(e)=>{
 
-e.preventDefault();
+  const handleSubmit = (e) => {
 
-
-if(formData.password !== formData.confirmPassword){
-
-alert("Passwords do not match");
-
-return;
-
-}
+    e.preventDefault();
 
 
-console.log("Register Data:",formData);
+    if (formData.password !== formData.confirmPassword) {
+
+      alert("Passwords do not match");
+
+      return;
+
+    }
+
+    CreateUserData(formData)
 
 
-alert("Account Created Successfully!");
-
-};
+  };
 
 
 
   return (
 
-<div className="container-main">
+    <div className="container-main">
 
 
-{/* LEFT PANEL */}
+      {/* LEFT PANEL */}
 
-<div className="left-panel">
+      <div className="left-panel">
 
 
-<div className="logo">
+        <div className="logo">
 
-<h2>Mini CRM</h2>
+          <h2>Mini CRM</h2>
 
-</div>
+        </div>
 
 
 
-<div className="hero-content">
+        <div className="hero-content">
 
-<h1>
-Manage your sales <br/>
-pipeline like a pro
-</h1>
+          <h1>
+            Manage your sales <br />
+            pipeline like a pro
+          </h1>
 
 
-<p>
-Track leads, close deals, and grow your business with a modern CRM
-designed for growing teams.
-</p>
+          <p>
+            Track leads, close deals, and grow your business with a modern CRM
+            designed for growing teams.
+          </p>
 
 
-</div>
+        </div>
 
 
 
 
-<div className="dashboard">
+        <div className="dashboard">
 
-<img src={dashboard} alt="Dashboard"/>
+          <img src={dashboard} alt="Dashboard" />
 
-</div>
+        </div>
 
 
 
 
-<div className="trusted-teams">
+        <div className="trusted-teams">
 
 
-<div className="avatars">
+          <div className="avatars">
 
-<img src={avatar1} alt="user"/>
-<img src={avatar2} alt="user"/>
-<img src={avatar3} alt="user"/>
-<img src={avatar4} alt="user"/>
+            <img src={avatar1} alt="user" />
+            <img src={avatar2} alt="user" />
+            <img src={avatar3} alt="user" />
+            <img src={avatar4} alt="user" />
 
-</div>
+          </div>
 
 
 
-<div className="team-text">
+          <div className="team-text">
 
-<h3>
-Trusted by 2,000+ Teams
-</h3>
+            <h3>
+              Trusted by 2,000+ Teams
+            </h3>
 
-<p>
-Helping businesses increase productivity every day.
-</p>
+            <p>
+              Helping businesses increase productivity every day.
+            </p>
 
-</div>
+          </div>
 
 
-</div>
+        </div>
 
 
-</div>
+      </div>
 
 
 
 
-{/* RIGHT PANEL */}
+      {/* RIGHT PANEL */}
 
 
-<div className="right-panel">
+      <div className="right-panel">
 
 
-<div className="form-container">
+        <div className="form-container">
 
 
-<h2>Create your Account</h2>
+          <h2>Create your Account</h2>
 
 
-<p>
-Join thousands of businesses managing their sales efficiently.
-</p>
+          <p>
+            Join thousands of businesses managing their sales efficiently.
+          </p>
 
-<form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
 
 
-<div className="input-group">
+            <div className="input-group">
 
-<label>Full Name</label>
+              <label>Full Name</label>
 
-<input
+              <input
 
-type="text"
+                type="text"
 
-name="fullName"
+                name="fullName"
 
-placeholder="Enter your full name"
+                placeholder="Enter your full name"
 
-value={formData.fullName}
+                value={formData.fullName}
 
-onChange={handleChange}
+                onChange={handleChange}
 
-required
+                required
 
-/>
+              />
 
-</div>
+            </div>
 
 
 
 
-<div className="input-group">
+            <div className="input-group">
 
-<label>Email Address</label>
+              <label>Email Address</label>
 
 
-<input
+              <input
 
-type="email"
+                type="email"
 
-name="email"
+                name="email"
 
-placeholder="Enter your email"
+                placeholder="Enter your email"
 
-value={formData.email}
+                value={formData.email}
 
-onChange={handleChange}
+                onChange={handleChange}
 
-required
+                required
 
-/>
+              />
 
 
-</div>
+            </div>
 
 
 
 
 
-<div className="input-group">
+            <div className="input-group">
 
-<label>Phone Number</label>
+              <label>Phone Number</label>
 
 
-<input
+              <input
 
-type="tel"
+                type="tel"
 
-name="phone"
+                name="phone"
 
-placeholder="+92 300 1234567"
+                placeholder="+92 300 1234567"
 
-value={formData.phone}
+                value={formData.phone}
 
-onChange={handleChange}
+                onChange={handleChange}
 
-required
+                required
 
-/>
+              />
 
 
-</div>
+            </div>
 
 
 
 
 
 
-<div className="input-group">
+            <div className="input-group">
 
 
-<label>Password</label>
+              <label>Password</label>
 
 
-<div className="password-box">
+              <div className="password-box">
 
 
-<input
+                <input
 
-type={showPassword ? "text":"password"}
+                  type={showPassword ? "text" : "password"}
 
-name="password"
+                  name="password"
 
-placeholder="Create password"
+                  placeholder="Create password"
 
-value={formData.password}
+                  value={formData.password}
 
-onChange={handleChange}
+                  onChange={handleChange}
 
-required
+                  required
 
-/>
+                />
 
 
 
-<button
+                <button
 
-type="button"
+                  type="button"
 
-onClick={()=>setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
 
->
+                >
 
-{
-showPassword ? <FaEyeSlash/> : <FaEye/>
-}
+                  {
+                    showPassword ? <FaEyeSlash /> : <FaEye />
+                  }
 
 
-</button>
+                </button>
 
 
-</div>
-</div>
+              </div>
+            </div>
 
-<div className="input-group">
+            <div className="input-group">
 
 
-<label>Confirm Password</label>
+              <label>Confirm Password</label>
 
 
-<div className="password-box">
+              <div className="password-box">
 
 
-<input
+                <input
 
-type={showConfirmPassword ? "text":"password"}
+                  type={showConfirmPassword ? "text" : "password"}
 
-name="confirmPassword"
+                  name="confirmPassword"
 
-placeholder="Confirm password"
+                  placeholder="Confirm password"
 
-value={formData.confirmPassword}
+                  value={formData.confirmPassword}
 
-onChange={handleChange}
+                  onChange={handleChange}
 
-required
+                  required
 
-/>
+                />
 
 
 
 
-<button
+                <button
 
-type="button"
+                  type="button"
 
-onClick={()=>setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
 
->
+                >
 
-{
-showConfirmPassword ? <FaEyeSlash/> : <FaEye/>
-}
+                  {
+                    showConfirmPassword ? <FaEyeSlash /> : <FaEye />
+                  }
 
 
-</button>
+                </button>
 
 
-</div>
+              </div>
 
 
-</div>
+            </div>
 
-<button 
-type="submit"
-className="register-btn"
->
-Create Account
-</button>
+            <button
+              type="submit"
+              className="register-btn"
+            >
+              Create Account
+            </button>
 
 
-<p className="login-link">
+            <p className="login-link">
 
-Already have an account?
+              Already have an account?
 
-{" "}
+              {" "}
 
-<Link to="/login">
+              <Link to="/login">
 
-Login
+                Login
 
-</Link>
+              </Link>
 
 
-</p>
+            </p>
 
 
 
-</form>
+          </form>
 
 
 
-</div>
+        </div>
 
 
-</div>
+      </div>
 
 
-</div>
+    </div>
 
 
   );

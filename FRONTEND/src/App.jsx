@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -8,25 +8,21 @@ import ChangePassword from "./pages/ChangePassword";
 
 function App() {
 
-return (
+    return (
 
-<BrowserRouter>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ChangePassword />} />
 
-<Routes>
+            </Routes>
 
-<Route path="/login" element={<Login/>}/>
+        </BrowserRouter>
 
-<Route path="/" element={<Register/>}/>
-
-<Route path="/forgot-password" element={<ForgotPassword/>}/>
-
-<Route path="/reset-password" element={<ChangePassword/>}/>
-
-</Routes>
-
-</BrowserRouter>
-
-);
+    );
 
 }
 
