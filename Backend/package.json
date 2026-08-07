@@ -1,8 +1,16 @@
 {
+  "scripts": {
+    "dev": "node server.js",
+    "build": "nodemon server.js"
+  },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongodb": "^7.5.0"
+    "mongodb": "^7.5.0",
+    "mongoose": "^9.9.1",
+    "nodemon": "^3.1.14",
+    "yup": "^1.7.1"
   }
 }
