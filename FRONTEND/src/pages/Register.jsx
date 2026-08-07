@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
-
+import axios from "axios";
 import dashboard from "../../assets/dashboard.png";
 import avatar1 from "../../assets/1.png";
 import avatar2 from "../../assets/2.png";
@@ -46,27 +46,47 @@ setFormData({
 
 
 
-const handleSubmit=(e)=>{
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-e.preventDefault();
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
 
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/register",
+      {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      }
+    );
 
-if(formData.password !== formData.confirmPassword){
+    alert(response.data.message);
 
-alert("Passwords do not match");
+    console.log(response.data);
 
-return;
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    });
 
+  } catch (error) {
+  console.log(error);
+
+  if (error.response) {
+    alert(error.response.data.message);
+  } else {
+    alert(error.message);
+  }
 }
-
-
-console.log("Register Data:",formData);
-
-
-alert("Account Created Successfully!");
-
 };
-
 
 
   return (
