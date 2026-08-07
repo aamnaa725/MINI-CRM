@@ -20,11 +20,10 @@ function Register() {
 
 
   const [formData, setFormData] = useState({
-
-    FullName: "",
-    EmailAddress: "",
-    PhoneNumber: "",
-    Password: ""
+    fullName: "",
+    email: "",
+    phone: "",
+    password: ""
   });
 
 
@@ -43,7 +42,7 @@ function Register() {
 
   async function CreateUserData(userData) {
     try {
-      const response = await fetch('http://127.0.0.1:3000/auth/register', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json' // Tells the server to expect JSON
