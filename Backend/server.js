@@ -1,59 +1,65 @@
-// 1. Load dependencies at the very top
-require('dotenv').config();
-const express = require('express');
-const { MongoClient } = require('mongodb');
-const authRouter = require('./routes/authRouter');
-const userRouter = require('./routes/userRouter');
-const cors = require('cors');
+require("dotenv").config();
 
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
+const authRouter = require("./routes/authRouter");
+const userRouter = require("./routes/userRouter");
 
 const app = express();
-const PORT = process.env.PORT;
-const MONGO_URI = process.env.MONGODB_URI;
-const DB_NAME = 'mini-crm';
 
-let db;
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGODB_URI;
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow only your Vite/React frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow these methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Fixes your exact error
-  credentials: true // Allow cookies/sessions if needed later
+  origin: "http://localhost:5174",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
 
-
-// 2. Global Middleware
+// Middleware
 app.use(cors(corsOptions));
-app.use(express.json()); // Parses incoming JSON payloads
+app.use(express.json());
 
-// 3. Database Connection Logic
+// Routes
+app.use("/auth", authRouter);
+app.use("/users", userRouter);
+
+// Health check
+app.get("/status", (req, res) => {
+  res.json({
+    status: "Online",
+    database:
+      mongoose.connection.readyState === 1
+        ? "Connected"
+        : "Disconnected",
+  });
+});
+
+// Start server
 async function startServer() {
-    try {
-        const client = new MongoClient(MONGO_URI);
-        await client.connect();
-        console.log('✅ Connected successfully to MongoDB server');
-        
-        db = client.db(DB_NAME);
-        app.locals.db = db; 
+  try {
+    await mongoose.connect(MONGO_URI, {
+      dbName: "mini-crm",
+    });
 
-        app.use('/auth', authRouter);
-        // app.use('/users', userRouter);
+    console.log("✅ Connected successfully to MongoDB");
 
-        // Health check endpoint
-        app.get('/status', (req, res) => {
-            res.json({ status: 'Online', database: 'Connected' });
-        });
+    app.listen(PORT, () => {
+      console.log(
+        `🚀 Server is running at http://localhost:${PORT}`
+      );
+    });
+  } catch (error) {
+    console.error(
+      "❌ Database connection failed:",
+      error.message
+    );
 
-        // 5. Start HTTP Listener
-        app.listen(PORT, () => {
-            console.log(`🚀 Server is listening at http://localhost:${PORT}`);
-        });
-
-    } catch (error) {
-        console.error('❌ Database connection failed framework initialization:', error);
-        process.exit(1); // Stop the app if it cannot connect to the database
-    }
+    process.exit(1);
+  }
 }
 
-// Execute the bootstrap function
 startServer();
