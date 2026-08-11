@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
 
 import dashboard from "../../assets/dashboard.png";
 import avatar1 from "../../assets/1.png";
@@ -11,202 +11,472 @@ import avatar4 from "../../assets/4.png";
 import "../styles/ChangePassword.css";
 
 function ChangePassword() {
+  const navigate = useNavigate();
 
-const [showPassword,setShowPassword] = useState(false);
-const [showConfirmPassword,setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
-const [formData,setFormData] = useState({
-    password:"",
-    confirmPassword:""
-});
+  const [formData, setFormData] = useState({
+    password: "",
+    confirmPassword: "",
+  });
 
-const handleChange=(e)=>{
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+
+  // ======================================================
+  // HANDLE INPUT CHANGE
+  // ======================================================
+
+  const handleChange = (e) => {
     setFormData({
-        ...formData,
-        [e.target.name]:e.target.value
+      ...formData,
+      [e.target.name]: e.target.value,
     });
-};
 
-const handleSubmit=(e)=>{
+    // Remove old message when user starts typing again
+    setMessage("");
+    setMessageType("");
+  };
+
+  // ======================================================
+  // PASSWORD REQUIREMENTS
+  // ======================================================
+
+  const hasUppercase = /[A-Z]/.test(formData.password);
+  const hasLowercase = /[a-z]/.test(formData.password);
+  const hasNumber = /[0-9]/.test(formData.password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(formData.password);
+  const hasMinLength = formData.password.length >= 8;
+
+  // ======================================================
+  // PASSWORD MATCH
+  // ======================================================
+
+  const passwordsMatch =
+    formData.confirmPassword.length > 0 &&
+    formData.password === formData.confirmPassword;
+
+  const passwordsDoNotMatch =
+    formData.confirmPassword.length > 0 &&
+    formData.password !== formData.confirmPassword;
+
+  // ======================================================
+  // SUBMIT
+  // ======================================================
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(formData.password !== formData.confirmPassword){
-        alert("Passwords do not match");
-        return;
+    setMessage("");
+    setMessageType("");
+
+    // Check password requirements
+    if (
+      !hasMinLength ||
+      !hasUppercase ||
+      !hasLowercase ||
+      !hasNumber ||
+      !hasSpecial
+    ) {
+      setMessage(
+        "Password does not meet all the required conditions."
+      );
+      setMessageType("error");
+      return;
     }
 
-    console.log("New Password:",formData);
+    // Check password match
+    if (formData.password !== formData.confirmPassword) {
+      setMessage("Passwords do not match.");
+      setMessageType("error");
+      return;
+    }
 
-    alert("Password Changed Successfully!");
-};
+    // Get email saved during reset process
+    const email = sessionStorage.getItem("resetEmail");
 
-return (
-<div className="change-container">
+    if (!email) {
+      setMessage(
+        "Reset session expired. Please start the password reset again."
+      );
+      setMessageType("error");
 
-<div className="change-left-panel">
+      setTimeout(() => {
+        navigate("/forgot-password");
+      }, 1500);
 
-<div className="change-logo">
-<h2>Mini CRM</h2>
-</div>
+      return;
+    }
 
-<div className="change-hero">
+    try {
+      setLoading(true);
 
-<h1>
-Create a new <br/>
-secure password
-</h1>
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/reset-password`,
+        {
+          method: "POST",
 
-<p>
-Choose a strong password to keep your CRM account safe and secure.
-</p>
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-</div>
+          body: JSON.stringify({
+            email: email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          }),
+        }
+      );
 
-<div className="change-dashboard">
+      const data = await response.json();
 
-<img 
-src={dashboard}
-alt="CRM Dashboard"
-/>
+      // Backend error
+      if (!response.ok) {
+        setMessage(
+          data.message || "Unable to change password."
+        );
+        setMessageType("error");
+        return;
+      }
 
-</div>
+      // Success
+      setMessage(
+        data.message || "Password changed successfully!"
+      );
+      setMessageType("success");
 
-<div className="change-team">
+      // Remove reset information
+      sessionStorage.removeItem("resetEmail");
 
-<div className="change-avatars">
+      // Redirect to login after short delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (error) {
+      console.error("Reset password error:", error);
 
-<img src={avatar1} alt="User"/>
-<img src={avatar2} alt="User"/>
-<img src={avatar3} alt="User"/>
-<img src={avatar4} alt="User"/>
+      setMessage(
+        "Something went wrong. Please try again."
+      );
 
-</div>
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-<div>
+  return (
+    <div className="container-main">
+      {/* ==================================================
+          LEFT PANEL
+      ================================================== */}
 
-<h3>
-Trusted by 2,000+ Teams
-</h3>
+      <div className="left-panel">
+        {/* LOGO */}
 
-<p>
-Helping businesses increase productivity every day.
-</p>
+        <div className="logo">
+          <h2>Mini CRM</h2>
+        </div>
 
-</div>
+        {/* HERO */}
 
-</div>
+        <div className="hero-content">
+          <h1>
+            Secure your
+            <br />
+            account easily
+          </h1>
 
-</div>
+          <p>
+            Create a strong new password and keep your
+            Mini CRM account safe and secure.
+          </p>
 
+          {/* DASHBOARD IMAGE */}
 
-<div className="change-right-panel">
+          <div className="dashboard">
+            <img
+              src={dashboard}
+              alt="CRM Dashboard"
+            />
+          </div>
+        </div>
 
-<div className="change-form">
+        {/* TRUSTED TEAMS */}
 
-<h2>
-Reset Password
-</h2>
+        <div className="trusted-teams">
+          <div className="avatars">
+            <img src={avatar1} alt="Team member" />
+            <img src={avatar2} alt="Team member" />
+            <img src={avatar3} alt="Team member" />
+            <img src={avatar4} alt="Team member" />
+          </div>
 
-<p>
-Create your new password and confirm it below.
-</p>
+          <div className="team-text">
+            <h3>Trusted by 2,000+ Teams</h3>
 
+            <p>
+              Helping businesses increase productivity
+              every day.
+            </p>
+          </div>
+        </div>
+      </div>
 
-<form onSubmit={handleSubmit}>
+      {/* ==================================================
+          RIGHT PANEL
+      ================================================== */}
 
+      <div className="right-panel">
+        <div className="form-container">
+          {/* HEADING */}
 
-<div className="change-input-group">
+          <h2>Change Password</h2>
 
-<label>
-New Password
-</label>
+          <p>
+            Enter a strong new password for your account.
+          </p>
 
-<div className="password-box">
+          {/* FRONTEND MESSAGE */}
 
-<input
-type={showPassword ? "text":"password"}
-name="password"
-placeholder="Enter new password"
-value={formData.password}
-onChange={handleChange}
-required
-/>
+          {message && (
+            <div
+              className={`form-message ${messageType}`}
+            >
+              {message}
+            </div>
+          )}
 
-<button
-type="button"
-onClick={()=>setShowPassword(!showPassword)}
->
-{
-showPassword ? <FaEyeSlash/> : <FaEye/>
-}
-</button>
+          {/* FORM */}
 
-</div>
+          <form onSubmit={handleSubmit}>
+            {/* ==================================================
+                NEW PASSWORD
+            ================================================== */}
 
-</div>
+            <div className="input-group">
+              <label>New Password</label>
 
+              <div className="password-box">
+                <input
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  name="password"
+                  placeholder="Enter new password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
 
-<div className="change-input-group">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                >
+                  {showPassword ? (
+                    <FaEyeSlash />
+                  ) : (
+                    <FaEye />
+                  )}
+                </button>
+              </div>
+            </div>
 
-<label>
-Confirm Password
-</label>
+            {/* ==================================================
+                CONFIRM PASSWORD
+            ================================================== */}
 
-<div className="password-box">
+            <div className="input-group">
+              <label>Confirm Password</label>
 
-<input
-type={showConfirmPassword ? "text":"password"}
-name="confirmPassword"
-placeholder="Confirm new password"
-value={formData.confirmPassword}
-onChange={handleChange}
-required
-/>
+              <div className="password-box">
+                <input
+                  type={
+                    showConfirmPassword
+                      ? "text"
+                      : "password"
+                  }
+                  name="confirmPassword"
+                  placeholder="Confirm new password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                />
 
-<button
-type="button"
-onClick={()=>setShowConfirmPassword(!showConfirmPassword)}
->
-{
-showConfirmPassword ? <FaEyeSlash/> : <FaEye/>
-}
-</button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowConfirmPassword(
+                      !showConfirmPassword
+                    )
+                  }
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirm password"
+                      : "Show confirm password"
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <FaEyeSlash />
+                  ) : (
+                    <FaEye />
+                  )}
+                </button>
+              </div>
 
-</div>
+              {/* PASSWORD MATCH MESSAGE
+                  INSIDE CONFIRM PASSWORD BLOCK */}
 
-</div>
+              {formData.confirmPassword && (
+                <div
+                  className={`password-match ${
+                    passwordsMatch
+                      ? "success"
+                      : "error"
+                  }`}
+                >
+                  {passwordsMatch
+                    ? "✓ Passwords match"
+                    : "✕ Passwords do not match"}
+                </div>
+              )}
+            </div>
 
+            {/* ==================================================
+                PASSWORD REQUIREMENTS
+            ================================================== */}
 
-<button
-type="submit"
-className="reset-btn"
->
-Update Password
-</button>
+            <div className="password-info">
+              <p>Password requirements:</p>
 
+              <ul>
+                {/* 8 CHARACTERS */}
 
-<p className="back-login">
+                <li
+                  className={
+                    hasMinLength
+                      ? "requirement valid"
+                      : "requirement"
+                  }
+                >
+                  <span>
+                    {hasMinLength ? "✓" : "•"}
+                  </span>
 
-Remember your password?
+                  At least 8 characters
+                </li>
 
-{" "}
+                {/* UPPERCASE */}
 
-<Link to="/login">
-Login
-</Link>
+                <li
+                  className={
+                    hasUppercase
+                      ? "requirement valid"
+                      : "requirement"
+                  }
+                >
+                  <span>
+                    {hasUppercase ? "✓" : "•"}
+                  </span>
 
-</p>
+                  At least one uppercase letter
+                </li>
 
+                {/* LOWERCASE */}
 
-</form>
+                <li
+                  className={
+                    hasLowercase
+                      ? "requirement valid"
+                      : "requirement"
+                  }
+                >
+                  <span>
+                    {hasLowercase ? "✓" : "•"}
+                  </span>
 
-</div>
+                  At least one lowercase letter
+                </li>
 
-</div>
+                {/* NUMBER */}
 
-</div>
-);
+                <li
+                  className={
+                    hasNumber
+                      ? "requirement valid"
+                      : "requirement"
+                  }
+                >
+                  <span>
+                    {hasNumber ? "✓" : "•"}
+                  </span>
 
+                  At least one number
+                </li>
+
+                {/* SPECIAL CHARACTER */}
+
+                <li
+                  className={
+                    hasSpecial
+                      ? "requirement valid"
+                      : "requirement"
+                  }
+                >
+                  <span>
+                    {hasSpecial ? "✓" : "•"}
+                  </span>
+
+                  At least one special character
+                </li>
+              </ul>
+            </div>
+
+            {/* ==================================================
+                UPDATE PASSWORD BUTTON
+            ================================================== */}
+
+            <button
+              type="submit"
+              className="reset-btn"
+              disabled={loading}
+            >
+              {loading
+                ? "Updating..."
+                : "Update Password"}
+            </button>
+          </form>
+
+          {/* ==================================================
+              LOGIN LINK
+          ================================================== */}
+
+          <p className="login-link">
+            Remember your password?{" "}
+            <button
+              type="button"
+              className="login-button"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default ChangePassword;

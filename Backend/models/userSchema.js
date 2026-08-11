@@ -19,12 +19,30 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true,
-      trim: true,
     },
 
     password: {
       type: String,
       required: true,
+    },
+
+    // =========================
+    // OTP RESET FIELDS
+    // =========================
+
+    resetOtp: {
+      type: String,
+      default: null,
+    },
+
+    resetOtpExpires: {
+      type: Date,
+      default: null,
+    },
+
+    otpVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {
