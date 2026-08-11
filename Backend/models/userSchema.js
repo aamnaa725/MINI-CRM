@@ -1,23 +1,55 @@
 const mongoose = require("mongoose");
 
-// 1. Connect to MongoDB
-mongoose
-  .connect("mongodb://localhost:27017/mini-crm")
-  .then(() => console.log("MongoDB Connected Successfully"))
-  .catch((err) => console.error("Database connection error:", err));
-
-// 2. Define the Mongoose Schema matching your route
 const userSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    phone: { type: String, required: true },
-    password: { type: String, required: true },
-  },
-  { timestamps: true },
-); // Automatically adds createdAt and updatedAt fields
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-// 3. Create the Model
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+    },
+
+    // =========================
+    // OTP RESET FIELDS
+    // =========================
+
+    resetOtp: {
+      type: String,
+      default: null,
+    },
+
+    resetOtpExpires: {
+      type: Date,
+      default: null,
+    },
+
+    otpVerified: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

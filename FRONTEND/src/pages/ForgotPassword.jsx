@@ -1,319 +1,415 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-
 import dashboard from "../../assets/dashboard.png";
 import avatar1 from "../../assets/1.png";
 import avatar2 from "../../assets/2.png";
 import avatar3 from "../../assets/3.png";
 import avatar4 from "../../assets/4.png";
 
-
 import "../styles/ForgotPassword.css";
-
 
 
 function ForgotPassword() {
 
-
   const navigate = useNavigate();
 
+  const [email, setEmail] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const [message, setMessage] = useState("");
+
+  const [error, setError] = useState("");
 
 
-  const [email,setEmail] = useState("");
+  // ======================================================
+  // HANDLE FORGOT PASSWORD
+  // ======================================================
 
-
-
-  const handleSubmit = (e)=>{
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
 
+    setMessage("");
+    setError("");
 
 
-    console.log("Forgot Password Email:", {
+    // --------------------------------------------
+    // Check email
+    // --------------------------------------------
 
-      email: email
+    if (!email.trim()) {
 
-    });
+      setError("Please enter your email address");
 
-
-
-    alert("Password reset link sent successfully!");
-
+      return;
+    }
 
 
-    navigate("/reset-password");
+    try {
 
+      setLoading(true);
+
+
+      // --------------------------------------------
+      // Send email to backend
+      // --------------------------------------------
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        }
+      );
+
+
+      // --------------------------------------------
+      // Read backend response
+      // --------------------------------------------
+
+      const data = await response.json();
+
+
+      // --------------------------------------------
+      // Backend error
+      // --------------------------------------------
+
+      if (!response.ok) {
+
+        setError(
+          data.message || "Something went wrong"
+        );
+
+        return;
+      }
+
+
+      // --------------------------------------------
+      // Success
+      // --------------------------------------------
+
+      setMessage(
+        data.message || "OTP generated successfully"
+      );
+
+
+      // --------------------------------------------
+      // DEVELOPMENT ONLY
+      // --------------------------------------------
+      // Backend currently returns OTP so that
+      // we can test the complete reset flow.
+      // --------------------------------------------
+
+      console.log("Generated OTP:", data.otp);
+
+
+      // --------------------------------------------
+      // Save email
+      // --------------------------------------------
+
+      sessionStorage.setItem(
+        "resetEmail",
+        email.trim().toLowerCase()
+      );
+
+
+      // --------------------------------------------
+      // Save OTP for development testing
+      // --------------------------------------------
+
+      sessionStorage.setItem(
+        "resetOtp",
+        data.otp
+      );
+
+
+      // --------------------------------------------
+      // Redirect to reset password page
+      // --------------------------------------------
+
+      setTimeout(() => {
+
+        navigate("/reset-password");
+
+      }, 800);
+
+
+    } catch (error) {
+
+      console.error(
+        "Forgot password error:",
+        error
+      );
+
+
+      setError(
+        "Unable to connect to server. Please try again."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
 
   };
 
 
-
   return (
 
+    <div className="container-main">
 
-<div className="container-main">
 
+      {/* ==================================================
+          LEFT PANEL
+      ================================================== */}
 
+      <div className="left-panel">
 
-{/* ================= LEFT PANEL ================= */}
 
+        {/* LOGO */}
 
-<div className="left-panel">
+        <div className="logo">
 
+          <h2>
+            Mini CRM
+          </h2>
 
+        </div>
 
-<div className="logo">
 
-<h2>
-Mini CRM
-</h2>
+        {/* HERO */}
 
-</div>
+        <div className="hero-content">
 
+          <h1>
 
+            Reset your
+            <br />
+            password easily
 
+          </h1>
 
 
-<div className="hero-content">
+          <p>
 
+            Enter your registered email address
+            and we will help you recover your account.
 
-<h1>
+          </p>
 
-Reset your <br/>
-password easily
+        </div>
 
-</h1>
 
+        {/* DASHBOARD */}
 
+        <div className="dashboard">
 
-<p>
+          <img
+            src={dashboard}
+            alt="CRM Dashboard"
+          />
 
-Enter your registered email address and we will help you recover your account.
+        </div>
 
-</p>
 
+        {/* TRUSTED TEAMS */}
 
-</div>
+        <div className="trusted-teams">
 
 
+          <div className="avatars">
 
+            <img
+              src={avatar1}
+              alt="user"
+            />
 
+            <img
+              src={avatar2}
+              alt="user"
+            />
 
+            <img
+              src={avatar3}
+              alt="user"
+            />
 
-<div className="dashboard">
+            <img
+              src={avatar4}
+              alt="user"
+            />
 
+          </div>
 
-<img 
 
-src={dashboard}
+          <div className="team-text">
 
-alt="CRM Dashboard"
+            <h3>
+              Trusted by 2,000+ Teams
+            </h3>
 
-/>
+            <p>
+              Helping businesses increase
+              productivity every day.
+            </p>
 
+          </div>
 
-</div>
 
+        </div>
 
 
+      </div>
 
 
+      {/* ==================================================
+          RIGHT PANEL
+      ================================================== */}
 
+      <div className="right-panel">
 
-<div className="trusted-teams">
 
+        <div className="form-container">
 
-<div className="avatars">
 
+          {/* HEADING */}
 
-<img src={avatar1} alt="User"/>
+          <h2>
+            Forgot Password?
+          </h2>
 
-<img src={avatar2} alt="User"/>
 
-<img src={avatar3} alt="User"/>
+          <p>
+            Enter your email address to receive
+            a password reset OTP.
+          </p>
 
-<img src={avatar4} alt="User"/>
 
+          {/* ==================================================
+              SUCCESS MESSAGE
+          ================================================== */}
 
-</div>
+          {message && (
 
+            <div className="success-message">
 
+              {message}
 
+            </div>
 
-<div className="team-text">
+          )}
 
 
-<h3>
+          {/* ==================================================
+              ERROR MESSAGE
+          ================================================== */}
 
-Trusted by 2,000+ Teams
+          {error && (
 
-</h3>
+            <div className="error-message">
 
+              {error}
 
-<p>
+            </div>
 
-Helping businesses increase productivity every day.
+          )}
 
-</p>
 
+          {/* ==================================================
+              FORM
+          ================================================== */}
 
-</div>
+          <form onSubmit={handleSubmit}>
 
 
+            {/* EMAIL */}
 
-</div>
+            <div className="input-group">
 
+              <label>
+                Email Address
+              </label>
 
 
-</div>
+              <input
 
+                type="email"
 
+                name="email"
 
+                placeholder="Enter your email"
 
+                value={email}
 
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
 
+                required
 
-{/* ================= RIGHT PANEL ================= */}
+              />
 
+            </div>
 
 
-<div className="right-panel">
+            {/* RESET BUTTON */}
 
+            <button
 
+              type="submit"
 
-<div className="form-container">
+              className="register-btn"
 
+              disabled={loading}
 
+            >
 
-<h2>
+              {loading
+                ? "Checking..."
+                : "Reset Password"}
 
-Forgot Password?
+            </button>
 
-</h2>
 
+            {/* LOGIN */}
 
+            <p className="login-link">
 
+              Remember your password?
 
-<p>
+              {" "}
 
-Enter your email address to receive a password reset link.
+              <Link to="/login">
+                Login
+              </Link>
 
-</p>
+            </p>
 
 
+          </form>
 
 
+        </div>
 
 
+      </div>
 
-<form onSubmit={handleSubmit}>
 
-
-<div className="input-group">
-
-
-<label>
-
-Email Address
-
-</label>
-
-
-
-
-<input
-
-
-type="email"
-
-name="email"
-
-placeholder="Enter your email"
-
-value={email}
-
-onChange={(e)=>setEmail(e.target.value)}
-
-required
-
-
-/>
-
-
-</div>
-
-
-
-
-
-
-
-
-<button
-
-type="submit"
-
-className="register-btn"
-
->
-
-Reset Password
-
-</button>
-
-
-
-
-
-
-
-<p className="login-link">
-
-
-Remember your password?
-
-
-{" "}
-
-
-<Link to="/login">
-
-Login
-
-</Link>
-
-
-
-</p>
-
-
-
-
-
-</form>
-
-
-
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-</div>
-
+    </div>
 
   );
 
 }
-
 
 
 export default ForgotPassword;
