@@ -7,39 +7,32 @@ const User = require("../models/userSchema");
 const authRouter = express.Router();
 
 
-// =====================================================
+// ======================================================
 // REGISTER VALIDATION
-// =====================================================
+// ======================================================
 
 const registerSchema = yup.object({
   fullName: yup
     .string()
     .required("Full Name is required")
-    .trim()
-    .min(2, "Full Name must be at least 2 characters")
-    .max(50, "Full Name cannot exceed 50 characters"),
+    .trim(),
 
   email: yup
     .string()
+    .email("Invalid email format")
     .required("Email is required")
     .trim()
-    .lowercase()
-    .email("Invalid email format"),
+    .lowercase(),
 
   phone: yup
     .string()
     .required("Phone number is required")
-    .trim()
-    .matches(
-      /^\+?[0-9\s-]{10,15}$/,
-      "Enter a valid phone number"
-    ),
+    .trim(),
 
   password: yup
     .string()
     .required("Password is required")
     .min(8, "Password must be at least 8 characters")
-    .max(50, "Password cannot exceed 50 characters")
     .matches(
       /[A-Z]/,
       "Password must contain at least one uppercase letter"
@@ -59,13 +52,31 @@ const registerSchema = yup.object({
 });
 
 
-// =====================================================
+// ======================================================
+// LOGIN VALIDATION
+// ======================================================
+
+const loginSchema = yup.object({
+  email: yup
+    .string()
+    .email("Invalid email format")
+    .required("Email is required")
+    .trim()
+    .lowercase(),
+
+  password: yup
+    .string()
+    .required("Password is required"),
+});
+
+
+// ======================================================
+// REGISTER
 // POST /auth/register
-// =====================================================
+// ======================================================
 
 authRouter.post("/register", async (req, res) => {
   try {
-
     const {
       fullName,
       email,
@@ -75,10 +86,7 @@ authRouter.post("/register", async (req, res) => {
     } = req.body;
 
 
-    // -----------------------------------------------
     // Check password confirmation
-    // -----------------------------------------------
-
     if (password !== confirmPassword) {
       return res.status(400).json({
         status: 400,
@@ -87,10 +95,7 @@ authRouter.post("/register", async (req, res) => {
     }
 
 
-    // -----------------------------------------------
     // Validate registration data
-    // -----------------------------------------------
-
     const validatedData = await registerSchema.validate(
       {
         fullName,
@@ -104,10 +109,7 @@ authRouter.post("/register", async (req, res) => {
     );
 
 
-    // -----------------------------------------------
     // Check if email already exists
-    // -----------------------------------------------
-
     const existingUser = await User.findOne({
       email: validatedData.email,
     });
@@ -120,20 +122,14 @@ authRouter.post("/register", async (req, res) => {
     }
 
 
-    // -----------------------------------------------
     // Hash password
-    // -----------------------------------------------
-
     const hashedPassword = await bcrypt.hash(
       validatedData.password,
       10
     );
 
 
-    // -----------------------------------------------
-    // Create new user
-    // -----------------------------------------------
-
+    // Create user
     const newUser = new User({
       fullName: validatedData.fullName,
       email: validatedData.email,
@@ -145,14 +141,10 @@ authRouter.post("/register", async (req, res) => {
     const savedUser = await newUser.save();
 
 
-    // -----------------------------------------------
-    // Registration successful
-    // -----------------------------------------------
-
+    // Don't send password back
     return res.status(201).json({
       status: 201,
       message: "User Created Successfully",
-
       user: {
         id: savedUser._id,
         fullName: savedUser.fullName,
@@ -166,20 +158,10 @@ authRouter.post("/register", async (req, res) => {
     console.error("Registration error:", error);
 
 
-    // Yup validation error
     if (error.name === "ValidationError") {
       return res.status(400).json({
         status: 400,
         message: error.message,
-      });
-    }
-
-
-    // MongoDB duplicate email protection
-    if (error.code === 11000) {
-      return res.status(409).json({
-        status: 409,
-        message: "Email is already registered",
       });
     }
 
@@ -192,27 +174,10 @@ authRouter.post("/register", async (req, res) => {
 });
 
 
-// =====================================================
-// LOGIN VALIDATION
-// =====================================================
-
-const loginSchema = yup.object({
-  email: yup
-    .string()
-    .required("Email is required")
-    .trim()
-    .lowercase()
-    .email("Invalid email format"),
-
-  password: yup
-    .string()
-    .required("Password is required"),
-});
-
-
-// =====================================================
+// ======================================================
+// LOGIN
 // POST /auth/login
-// =====================================================
+// ======================================================
 
 authRouter.post("/login", async (req, res) => {
   try {
@@ -223,9 +188,9 @@ authRouter.post("/login", async (req, res) => {
     } = req.body;
 
 
-    // -----------------------------------------------
-    // Validate login data
-    // -----------------------------------------------
+    // --------------------------------------------
+    // 1. Validate login data
+    // --------------------------------------------
 
     const validatedData = await loginSchema.validate(
       {
@@ -238,16 +203,16 @@ authRouter.post("/login", async (req, res) => {
     );
 
 
-    // -----------------------------------------------
-    // Find user by email
-    // -----------------------------------------------
+    // --------------------------------------------
+    // 2. Find user by email
+    // --------------------------------------------
 
     const user = await User.findOne({
       email: validatedData.email,
     });
 
 
-    // Don't reveal whether email exists
+    // User does not exist
     if (!user) {
       return res.status(401).json({
         status: 401,
@@ -256,9 +221,9 @@ authRouter.post("/login", async (req, res) => {
     }
 
 
-    // -----------------------------------------------
-    // Compare password
-    // -----------------------------------------------
+    // --------------------------------------------
+    // 3. Compare password
+    // --------------------------------------------
 
     const passwordMatch = await bcrypt.compare(
       validatedData.password,
@@ -266,6 +231,7 @@ authRouter.post("/login", async (req, res) => {
     );
 
 
+    // Password is incorrect
     if (!passwordMatch) {
       return res.status(401).json({
         status: 401,
@@ -274,9 +240,9 @@ authRouter.post("/login", async (req, res) => {
     }
 
 
-    // -----------------------------------------------
-    // Login successful
-    // -----------------------------------------------
+    // --------------------------------------------
+    // 4. Login successful
+    // --------------------------------------------
 
     return res.status(200).json({
       status: 200,
@@ -289,6 +255,7 @@ authRouter.post("/login", async (req, res) => {
         phone: user.phone,
       },
     });
+
 
   } catch (error) {
 
@@ -304,6 +271,7 @@ authRouter.post("/login", async (req, res) => {
     }
 
 
+    // Server error
     return res.status(500).json({
       status: 500,
       message: "Internal server error",
