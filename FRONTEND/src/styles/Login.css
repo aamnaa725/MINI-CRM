@@ -782,3 +782,71 @@ Responsive
   }
 
 }
+/* ===========================
+Password Requirements
+=========================== */
+/* ======================================================
+   PASSWORD REQUIREMENTS
+====================================================== */
+
+.password-requirements {
+  margin-top: 14px;
+  padding: 16px 18px;
+  background: #f8f7ff;
+  border: 1px solid #e8e4ff;
+  border-radius: 12px;
+}
+
+.password-requirements h4 {
+  margin: 0 0 10px 0;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.password-requirements li {
+  margin-bottom: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+/* NOT fulfilled */
+
+.requirement-invalid {
+  color: #dc2626;
+}
+
+/* Fulfilled */
+
+.requirement-valid {
+  color: #16a34a;
+}
+
+.requirement-valid::marker {
+  color: #16a34a;
+}
+
+.requirement-invalid::marker {
+  color: #dc2626;
+}
+
+.forgot-password-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #5B4BFF;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.forgot-password-btn:hover {
+  text-decoration: underline;
+}

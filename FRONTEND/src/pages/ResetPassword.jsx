@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import dashboard from "../../assets/dashboard.png";
@@ -9,9 +9,7 @@ import avatar4 from "../../assets/4.png";
 
 import "../styles/ResetPassword.css";
 
-
 function ResetPassword() {
-
   const navigate = useNavigate();
 
   const [otp, setOtp] = useState("");
@@ -22,70 +20,150 @@ function ResetPassword() {
 
   const [message, setMessage] = useState("");
 
+  // Seconds before another OTP can be requested
+  const [resendTimer, setResendTimer] = useState(0);
+
+  // 15-minute cooldown
+  const [cooldownTimer, setCooldownTimer] = useState(0);
+
+  // ======================================================
+  // GET EMAIL
+  // ======================================================
+
+  const email = sessionStorage.getItem("resetEmail");
+
+  // ======================================================
+  // COUNTDOWN TIMER
+  // ======================================================
+
+  useEffect(() => {
+    const savedResendTimer =
+      sessionStorage.getItem("otpResendTimer");
+
+    const savedCooldownTimer =
+      sessionStorage.getItem("otpCooldownTimer");
+
+    if (savedResendTimer) {
+      const remaining = Math.max(
+        0,
+        parseInt(savedResendTimer, 10)
+      );
+
+      setResendTimer(remaining);
+    }
+
+    if (savedCooldownTimer) {
+      const remaining = Math.max(
+        0,
+        parseInt(savedCooldownTimer, 10)
+      );
+
+      setCooldownTimer(remaining);
+    }
+
+    const interval = setInterval(() => {
+      setResendTimer((previous) => {
+        if (previous <= 1) {
+          sessionStorage.removeItem(
+            "otpResendTimer"
+          );
+
+          return 0;
+        }
+
+        const newValue = previous - 1;
+
+        sessionStorage.setItem(
+          "otpResendTimer",
+          newValue.toString()
+        );
+
+        return newValue;
+      });
+
+      setCooldownTimer((previous) => {
+        if (previous <= 1) {
+          sessionStorage.removeItem(
+            "otpCooldownTimer"
+          );
+
+          return 0;
+        }
+
+        const newValue = previous - 1;
+
+        sessionStorage.setItem(
+          "otpCooldownTimer",
+          newValue.toString()
+        );
+
+        return newValue;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ======================================================
+  // FORMAT TIMER
+  // ======================================================
+
+  const formatTimer = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+
+    const remainingSeconds = seconds % 60;
+
+    return `${minutes}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
   // ======================================================
   // OTP INPUT
   // ======================================================
 
   const handleOtpChange = (e) => {
-
     const value = e.target.value;
 
-    // Only numbers
     if (!/^\d*$/.test(value)) {
       return;
     }
 
-    // Maximum 6 digits
     if (value.length > 6) {
       return;
     }
 
     setOtp(value);
-
     setError("");
   };
-
 
   // ======================================================
   // VERIFY OTP
   // ======================================================
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     setError("");
     setMessage("");
 
-
-    // Check OTP
     if (otp.length !== 6) {
-
       setError("Please enter the 6-digit OTP");
-
       return;
     }
 
-
-    // Get email saved from Forgot Password page
-    const email = sessionStorage.getItem("resetEmail");
-
-
     if (!email) {
-
       setError(
         "Reset session expired. Please request a new OTP."
       );
 
+      navigate("/forgot-password");
+
       return;
     }
 
-
     try {
-
       setLoading(true);
-
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/verify-otp`,
@@ -97,19 +175,15 @@ function ResetPassword() {
           },
 
           body: JSON.stringify({
-            email: email,
-            otp: otp,
+            email,
+            otp,
           }),
         }
       );
 
-
       const data = await response.json();
 
-
-      // Backend error
       if (!response.ok) {
-
         setError(
           data.message || "Invalid OTP"
         );
@@ -117,30 +191,30 @@ function ResetPassword() {
         return;
       }
 
-
-      // OTP verified
       setMessage(
-        data.message || "OTP verified successfully"
+        data.message ||
+          "OTP verified successfully"
       );
 
-
-      // Store verification status
       sessionStorage.setItem(
         "otpVerified",
         "true"
       );
 
+      // OTP verification gives a fresh reset flow
+      sessionStorage.removeItem(
+        "otpResendTimer"
+      );
 
-      // Redirect to change password
+      sessionStorage.removeItem(
+        "otpCooldownTimer"
+      );
+
       setTimeout(() => {
-
         navigate("/change-password");
-
       }, 800);
 
-
     } catch (error) {
-
       console.error(
         "OTP verification error:",
         error
@@ -149,31 +223,20 @@ function ResetPassword() {
       setError(
         "Unable to connect to server. Please try again."
       );
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
-
 
   // ======================================================
   // RESEND OTP
   // ======================================================
 
   const handleResend = async () => {
-
     setError("");
     setMessage("");
 
-
-    const email = sessionStorage.getItem("resetEmail");
-
-
     if (!email) {
-
       setError(
         "Please go back and enter your email again."
       );
@@ -181,11 +244,34 @@ function ResetPassword() {
       return;
     }
 
+    // ==================================================
+    // FRONTEND 60 SECOND CHECK
+    // ==================================================
+
+    if (resendTimer > 0) {
+      setError(
+        `Please wait ${resendTimer} seconds before requesting another OTP.`
+      );
+
+      return;
+    }
+
+    // ==================================================
+    // FRONTEND 15 MINUTE CHECK
+    // ==================================================
+
+    if (cooldownTimer > 0) {
+      setError(
+        `Too many OTP requests. Please wait ${formatTimer(
+          cooldownTimer
+        )}.`
+      );
+
+      return;
+    }
 
     try {
-
       setLoading(true);
-
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
@@ -197,39 +283,79 @@ function ResetPassword() {
           },
 
           body: JSON.stringify({
-            email: email,
+            email,
           }),
         }
       );
 
-
       const data = await response.json();
 
+      // ==================================================
+      // BACKEND RATE LIMIT
+      // ==================================================
 
-      if (!response.ok) {
+      if (response.status === 429) {
+        if (data.cooldownRemaining) {
+          if (
+            data.cooldownRemaining > 60
+          ) {
+            setCooldownTimer(
+              data.cooldownRemaining
+            );
+
+            sessionStorage.setItem(
+              "otpCooldownTimer",
+              data.cooldownRemaining.toString()
+            );
+          } else {
+            setResendTimer(
+              data.cooldownRemaining
+            );
+
+            sessionStorage.setItem(
+              "otpResendTimer",
+              data.cooldownRemaining.toString()
+            );
+          }
+        }
 
         setError(
-          data.message || "Unable to resend OTP"
+          data.message ||
+            "Please wait before requesting another OTP."
         );
 
         return;
       }
 
+      if (!response.ok) {
+        setError(
+          data.message ||
+            "Unable to resend OTP"
+        );
 
-      // Development testing only
-      console.log("New OTP:", data.otp);
+        return;
+      }
 
+      // ==================================================
+      // SUCCESS
+      // ==================================================
 
       setMessage(
-        "A new OTP has been generated."
+        data.message ||
+          "A new OTP has been sent to your email."
       );
-
 
       setOtp("");
 
+      // Start 60 second timer
+      setResendTimer(60);
+
+      sessionStorage.setItem(
+        "otpResendTimer",
+        "60"
+      );
 
     } catch (error) {
-
       console.error(
         "Resend OTP error:",
         error
@@ -238,36 +364,25 @@ function ResetPassword() {
       setError(
         "Unable to connect to server."
       );
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
+  // ======================================================
+  // RENDER
+  // ======================================================
 
   return (
-
     <div className="container-main">
 
-
-      {/* ==================================================
-          LEFT PANEL
-      ================================================== */}
+      {/* ================= LEFT PANEL ================= */}
 
       <div className="left-panel">
 
-
         <div className="logo">
-
-          <h2>
-            Mini CRM
-          </h2>
-
+          <h2>Mini CRM</h2>
         </div>
-
 
         <div className="hero-content">
 
@@ -277,14 +392,12 @@ function ResetPassword() {
             account securely
           </h1>
 
-
           <p>
             Enter the verification code sent
             to your registered email address.
           </p>
 
         </div>
-
 
         <div className="dashboard">
 
@@ -295,9 +408,7 @@ function ResetPassword() {
 
         </div>
 
-
         <div className="trusted-teams">
-
 
           <div className="avatars">
 
@@ -323,7 +434,6 @@ function ResetPassword() {
 
           </div>
 
-
           <div className="team-text">
 
             <h3>
@@ -339,59 +449,40 @@ function ResetPassword() {
 
         </div>
 
-
       </div>
 
-
-      {/* ==================================================
-          RIGHT PANEL
-      ================================================== */}
+      {/* ================= RIGHT PANEL ================= */}
 
       <div className="right-panel">
 
-
         <div className="form-container">
-
 
           <h2>
             Verify OTP
           </h2>
-
 
           <p>
             Enter the 6-digit verification code
             sent to your email.
           </p>
 
-
-          {/* SUCCESS MESSAGE */}
+          {/* SUCCESS */}
 
           {message && (
-
             <div className="success-message">
-
               {message}
-
             </div>
-
           )}
 
-
-          {/* ERROR MESSAGE */}
+          {/* ERROR */}
 
           {error && (
-
             <div className="error-message">
-
               {error}
-
             </div>
-
           )}
 
-
           <form onSubmit={handleSubmit}>
-
 
             {/* OTP */}
 
@@ -400,7 +491,6 @@ function ResetPassword() {
               <label>
                 Verification Code
               </label>
-
 
               <input
                 type="text"
@@ -416,7 +506,6 @@ function ResetPassword() {
 
             </div>
 
-
             {/* VERIFY */}
 
             <button
@@ -424,14 +513,10 @@ function ResetPassword() {
               className="register-btn"
               disabled={loading}
             >
-
               {loading
                 ? "Verifying..."
-                : "Verify OTP"
-              }
-
+                : "Verify OTP"}
             </button>
-
 
             {/* RESEND */}
 
@@ -441,19 +526,34 @@ function ResetPassword() {
 
               {" "}
 
-              <button
-                type="button"
-                className="resend-btn"
-                onClick={handleResend}
-                disabled={loading}
-              >
+              {cooldownTimer > 0 ? (
 
-                Resend OTP
+                <span className="resend-disabled">
+                  Try again in{" "}
+                  {formatTimer(cooldownTimer)}
+                </span>
 
-              </button>
+              ) : resendTimer > 0 ? (
+
+                <span className="resend-disabled">
+                  Resend OTP in{" "}
+                  {resendTimer}s
+                </span>
+
+              ) : (
+
+                <button
+                  type="button"
+                  className="resend-btn"
+                  onClick={handleResend}
+                  disabled={loading}
+                >
+                  Resend OTP
+                </button>
+
+              )}
 
             </p>
-
 
             {/* LOGIN */}
 
@@ -469,21 +569,14 @@ function ResetPassword() {
 
             </p>
 
-
           </form>
-
 
         </div>
 
-
       </div>
 
-
     </div>
-
   );
-
 }
-
 
 export default ResetPassword;

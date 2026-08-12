@@ -9,52 +9,69 @@ import avatar4 from "../../assets/4.png";
 
 import "../styles/ForgotPassword.css";
 
-
 function ForgotPassword() {
-
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const [message, setMessage] = useState("");
-
   const [error, setError] = useState("");
 
+  // ======================================================
+  // HANDLE EMAIL CHANGE
+  // ======================================================
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+
+    setError("");
+    setMessage("");
+  };
 
   // ======================================================
   // HANDLE FORGOT PASSWORD
   // ======================================================
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     setMessage("");
     setError("");
 
+    // ----------------------------------------------------
+    // Validate email
+    // ----------------------------------------------------
 
-    // --------------------------------------------
-    // Check email
-    // --------------------------------------------
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!email.trim()) {
-
+    if (!normalizedEmail) {
       setError("Please enter your email address");
-
       return;
     }
 
+    if (
+      !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(
+        normalizedEmail
+      )
+    ) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
     try {
-
       setLoading(true);
 
+      // ----------------------------------------------------
+      // Clear any previous OTP session
+      // ----------------------------------------------------
 
-      // --------------------------------------------
-      // Send email to backend
-      // --------------------------------------------
+      sessionStorage.removeItem("otpVerified");
+      sessionStorage.removeItem("otpPurpose");
+
+      // ----------------------------------------------------
+      // Request OTP
+      // ----------------------------------------------------
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
@@ -66,115 +83,95 @@ function ForgotPassword() {
           },
 
           body: JSON.stringify({
-            email: email.trim(),
+            email: normalizedEmail,
           }),
         }
       );
 
-
-      // --------------------------------------------
-      // Read backend response
-      // --------------------------------------------
+      // ----------------------------------------------------
+      // Read response safely
+      // ----------------------------------------------------
 
       const data = await response.json();
 
+      console.log("Forgot password response:", data);
 
-      // --------------------------------------------
+      // ----------------------------------------------------
       // Backend error
-      // --------------------------------------------
+      // ----------------------------------------------------
 
       if (!response.ok) {
-
         setError(
-          data.message || "Something went wrong"
+          data.message ||
+            "Unable to send OTP. Please try again."
         );
 
         return;
       }
 
-
-      // --------------------------------------------
-      // Success
-      // --------------------------------------------
-
-      setMessage(
-        data.message || "OTP generated successfully"
-      );
-
-
-      // --------------------------------------------
-      // DEVELOPMENT ONLY
-      // --------------------------------------------
-      // Backend currently returns OTP so that
-      // we can test the complete reset flow.
-      // --------------------------------------------
-
-      console.log("Generated OTP:", data.otp);
-
-
-      // --------------------------------------------
-      // Save email
-      // --------------------------------------------
+      // ----------------------------------------------------
+      // Save reset information
+      // ----------------------------------------------------
 
       sessionStorage.setItem(
         "resetEmail",
-        email.trim().toLowerCase()
+        normalizedEmail
       );
 
-
-      // --------------------------------------------
-      // Save OTP for development testing
-      // --------------------------------------------
+      // IMPORTANT:
+      // Tell ResetPassword.jsx this OTP is for
+      // PASSWORD RESET, not account verification.
 
       sessionStorage.setItem(
-        "resetOtp",
-        data.otp
+        "otpPurpose",
+        "password-reset"
       );
 
+      sessionStorage.setItem(
+        "otpVerified",
+        "false"
+      );
 
-      // --------------------------------------------
-      // Redirect to reset password page
-      // --------------------------------------------
+      // ----------------------------------------------------
+      // Success
+      // ----------------------------------------------------
+
+      setMessage(
+        data.message ||
+          "OTP has been sent to your email."
+      );
+
+      // ----------------------------------------------------
+      // Redirect to OTP verification
+      // ----------------------------------------------------
 
       setTimeout(() => {
-
         navigate("/reset-password");
-
       }, 800);
 
-
     } catch (error) {
-
       console.error(
         "Forgot password error:",
         error
       );
 
-
       setError(
-        "Unable to connect to server. Please try again."
+        "Unable to connect to the server. Please try again."
       );
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-
   return (
-
     <div className="container-main">
-
 
       {/* ==================================================
           LEFT PANEL
       ================================================== */}
 
       <div className="left-panel">
-
 
         {/* LOGO */}
 
@@ -192,19 +189,14 @@ function ForgotPassword() {
         <div className="hero-content">
 
           <h1>
-
             Reset your
             <br />
             password easily
-
           </h1>
 
-
           <p>
-
             Enter your registered email address
             and we will help you recover your account.
-
           </p>
 
         </div>
@@ -225,7 +217,6 @@ function ForgotPassword() {
         {/* TRUSTED TEAMS */}
 
         <div className="trusted-teams">
-
 
           <div className="avatars">
 
@@ -265,9 +256,7 @@ function ForgotPassword() {
 
           </div>
 
-
         </div>
-
 
       </div>
 
@@ -278,9 +267,7 @@ function ForgotPassword() {
 
       <div className="right-panel">
 
-
         <div className="form-container">
-
 
           {/* HEADING */}
 
@@ -300,13 +287,9 @@ function ForgotPassword() {
           ================================================== */}
 
           {message && (
-
             <div className="success-message">
-
               {message}
-
             </div>
-
           )}
 
 
@@ -315,13 +298,9 @@ function ForgotPassword() {
           ================================================== */}
 
           {error && (
-
             <div className="error-message">
-
               {error}
-
             </div>
-
           )}
 
 
@@ -331,7 +310,6 @@ function ForgotPassword() {
 
           <form onSubmit={handleSubmit}>
 
-
             {/* EMAIL */}
 
             <div className="input-group">
@@ -340,23 +318,15 @@ function ForgotPassword() {
                 Email Address
               </label>
 
-
               <input
-
                 type="email"
-
                 name="email"
-
                 placeholder="Enter your email"
-
                 value={email}
-
-                onChange={(e) =>
-                  setEmail(e.target.value)
-                }
-
+                onChange={handleEmailChange}
+                disabled={loading}
+                autoComplete="email"
                 required
-
               />
 
             </div>
@@ -365,17 +335,13 @@ function ForgotPassword() {
             {/* RESET BUTTON */}
 
             <button
-
               type="submit"
-
               className="register-btn"
-
               disabled={loading}
-
             >
 
               {loading
-                ? "Checking..."
+                ? "Sending OTP..."
                 : "Reset Password"}
 
             </button>
@@ -395,21 +361,14 @@ function ForgotPassword() {
 
             </p>
 
-
           </form>
-
 
         </div>
 
-
       </div>
 
-
     </div>
-
   );
-
 }
-
 
 export default ForgotPassword;

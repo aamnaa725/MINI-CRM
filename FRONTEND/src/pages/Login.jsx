@@ -20,7 +20,6 @@ function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // Get email sent from Register page
   const [formData, setFormData] = useState({
     email: location.state?.email || "",
     password: "",
@@ -30,9 +29,58 @@ function Login() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // =========================
+  // ======================================================
+  // PASSWORD REQUIREMENTS
+  // ======================================================
+
+  const passwordRequirements = {
+    minLength: formData.password.length >= 8,
+    uppercase: /[A-Z]/.test(formData.password),
+    lowercase: /[a-z]/.test(formData.password),
+    number: /[0-9]/.test(formData.password),
+    special: /[^A-Za-z0-9]/.test(formData.password),
+  };
+
+  const handleForgotPassword = () => {
+  const email = formData.email.trim();
+
+  // Email is empty
+  if (!email) {
+    setErrors((previousErrors) => ({
+      ...previousErrors,
+      email: "Email address is required",
+    }));
+
+    return;
+  }
+
+  // Invalid email
+  if (
+    !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(
+      email
+    )
+  ) {
+    setErrors((previousErrors) => ({
+      ...previousErrors,
+      email: "Enter a valid email address",
+    }));
+
+    return;
+  }
+
+  // Save email so ForgotPassword can use it
+  sessionStorage.setItem(
+    "resetEmail",
+    email.toLowerCase()
+  );
+
+  // Go to forgot password page
+  navigate("/forgot-password");
+};
+
+  // ======================================================
   // HANDLE INPUT
-  // =========================
+  // ======================================================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,9 +99,9 @@ function Login() {
     setSuccessMessage("");
   };
 
-  // =========================
+  // ======================================================
   // VALIDATE LOGIN
-  // =========================
+  // ======================================================
 
   const validateForm = () => {
     const newErrors = {};
@@ -79,9 +127,9 @@ function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // =========================
+  // ======================================================
   // LOGIN USER
-  // =========================
+  // ======================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,9 +150,11 @@ function Login() {
         `${import.meta.env.VITE_API_URL}/auth/login`,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             email: formData.email.trim(),
             password: formData.password,
@@ -117,30 +167,54 @@ function Login() {
       console.log("Login response:", data);
 
       // Backend error
-      if (!response.ok) {
-        setErrors({
-          general:
-            data.message || "Invalid email or password",
-        });
+if (!response.ok) {
 
-        return;
-      }
+  // ================================================
+  // EMAIL NOT VERIFIED
+  // ================================================
 
-      // =========================
+  if (data.requiresVerification) {
+
+    sessionStorage.setItem(
+      "resetEmail",
+      data.email
+    );
+
+    sessionStorage.setItem(
+      "otpPurpose",
+      "signup"
+    );
+
+    navigate("/reset-password");
+
+    return;
+  }
+
+  // ================================================
+  // NORMAL LOGIN ERROR
+  // ================================================
+
+  setErrors({
+    general:
+      data.message ||
+      "Invalid email or password",
+  });
+
+  return;
+}
+      // ==================================================
       // LOGIN SUCCESS
-      // =========================
+      // ==================================================
 
       setSuccessMessage("Login successful!");
 
       console.log("Logged in user:", data.user);
 
-      // Save user information
       localStorage.setItem(
         "user",
         JSON.stringify(data.user)
       );
 
-      // Redirect to dashboard
       setTimeout(() => {
         navigate("/dashboard");
       }, 800);
@@ -152,6 +226,7 @@ function Login() {
         general:
           "Unable to connect to the server. Please try again.",
       });
+
     } finally {
       setIsLoading(false);
     }
@@ -160,7 +235,9 @@ function Login() {
   return (
     <div className="container-main">
 
-      {/* ================= LEFT PANEL ================= */}
+      {/* ==================================================
+          LEFT PANEL
+      ================================================== */}
 
       <div className="left-panel">
 
@@ -220,7 +297,9 @@ function Login() {
       </div>
 
 
-      {/* ================= RIGHT PANEL ================= */}
+      {/* ==================================================
+          RIGHT PANEL
+      ================================================== */}
 
       <div className="right-panel">
 
@@ -236,7 +315,9 @@ function Login() {
           </p>
 
 
-          {/* ================= GENERAL ERROR ================= */}
+          {/* ==================================================
+              GENERAL ERROR
+          ================================================== */}
 
           {errors.general && (
             <div className="general-error">
@@ -245,7 +326,9 @@ function Login() {
           )}
 
 
-          {/* ================= SUCCESS ================= */}
+          {/* ==================================================
+              SUCCESS
+          ================================================== */}
 
           {successMessage && (
             <div className="success-message">
@@ -256,7 +339,9 @@ function Login() {
 
           <form onSubmit={handleSubmit}>
 
-            {/* ================= EMAIL ================= */}
+            {/* ==================================================
+                EMAIL
+            ================================================== */}
 
             <div className="input-group">
 
@@ -287,7 +372,9 @@ function Login() {
             </div>
 
 
-            {/* ================= PASSWORD ================= */}
+            {/* ==================================================
+                PASSWORD
+            ================================================== */}
 
             <div className="input-group">
 
@@ -339,10 +426,79 @@ function Login() {
                 </span>
               )}
 
+
+              {/* ==================================================
+                  PASSWORD REQUIREMENTS
+              ================================================== */}
+
+              <div className="password-requirements">
+
+                <h4>
+                  Password requirements:
+                </h4>
+
+                <ul>
+
+                  <li
+                    className={
+                      passwordRequirements.minLength
+                        ? "requirement-valid"
+                        : "requirement-invalid"
+                    }
+                  >
+                    At least 8 characters
+                  </li>
+
+                  <li
+                    className={
+                      passwordRequirements.uppercase
+                        ? "requirement-valid"
+                        : "requirement-invalid"
+                    }
+                  >
+                    At least one uppercase letter
+                  </li>
+
+                  <li
+                    className={
+                      passwordRequirements.lowercase
+                        ? "requirement-valid"
+                        : "requirement-invalid"
+                    }
+                  >
+                    At least one lowercase letter
+                  </li>
+
+                  <li
+                    className={
+                      passwordRequirements.number
+                        ? "requirement-valid"
+                        : "requirement-invalid"
+                    }
+                  >
+                    At least one number
+                  </li>
+
+                  <li
+                    className={
+                      passwordRequirements.special
+                        ? "requirement-valid"
+                        : "requirement-invalid"
+                    }
+                  >
+                    At least one special character
+                  </li>
+
+                </ul>
+
+              </div>
+
             </div>
 
 
-            {/* ================= OPTIONS ================= */}
+            {/* ==================================================
+                OPTIONS
+            ================================================== */}
 
             <div className="login-options">
 
@@ -358,14 +514,16 @@ function Login() {
 
               </label>
 
-              <Link to="/forgot-password">
-                Forgot Password?
-              </Link>
+              <button type="button" className="forgot-password-btn" onClick={handleForgotPassword}>
+                   Forgot Password?
+              </button>
 
             </div>
 
 
-            {/* ================= LOGIN BUTTON ================= */}
+            {/* ==================================================
+                LOGIN BUTTON
+            ================================================== */}
 
             <button
               type="submit"
@@ -378,7 +536,9 @@ function Login() {
             </button>
 
 
-            {/* ================= REGISTER LINK ================= */}
+            {/* ==================================================
+                REGISTER LINK
+            ================================================== */}
 
             <p className="login-link">
 

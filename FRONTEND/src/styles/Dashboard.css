@@ -1050,3 +1050,11 @@ body {
   }
 
 }
+.logout-item {
+  color: #dc2626;
+}
+
+.logout-item:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}

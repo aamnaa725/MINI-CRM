@@ -40,9 +40,33 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    otpVerified: {
+    otpReq: {
       type: Boolean,
       default: false,
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    // =========================
+    // OTP RATE LIMITING
+    // =========================
+
+    otpRequestCount: {
+      type: Number,
+      default: 0,
+    },
+
+    lastOtpRequestAt: {
+      type: Date,
+      default: null,
+    },
+
+    otpCooldownUntil: {
+      type: Date,
+      default: null,
     },
   },
   {
