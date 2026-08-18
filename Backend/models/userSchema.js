@@ -25,10 +25,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
-    // =========================
-    // OTP RESET FIELDS
-    // =========================
+    
+    sessions: {
+      type: [String],
+      default: []
+    },
 
     resetOtp: {
       type: String,

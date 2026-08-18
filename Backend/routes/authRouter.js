@@ -2,14 +2,28 @@ const express = require("express");
 const crypto = require("crypto");
 const yup = require("yup");
 const bcrypt = require("bcrypt");
+const emailjs = require('@emailjs/nodejs');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+
 
 const User = require("../models/userSchema");
 
 const authRouter = express.Router();
+require("dotenv").config();
 
+
+authRouter.use(express.json());
+authRouter.use(express.urlencoded({ extended: true }));
 // ======================================================
 // PASSWORD VALIDATION
 // ======================================================
+
+emailjs.init({
+  publicKey: process.env.EMAILJS_PUBLIC_KEY,
+  privateKey: process.env.EMAILJS_PRIVATE_KEY,
+});
+
 
 const passwordSchema = yup
   .string()
@@ -133,7 +147,7 @@ authRouter.post("/register", async (req, res) => {
       fullName: validatedData.fullName,
       email: validatedData.email,
       phone: validatedData.phone,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
     const savedUser = await newUser.save();
@@ -192,6 +206,26 @@ authRouter.post("/login", async (req, res) => {
       email: validatedData.email,
     });
 
+
+    const userCopy = {
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      sessions: []
+    }
+    const options = {
+      expiresIn: '1h' // Options include: '24h', '7d', '15m'
+    };
+
+    const secretKey = process.env.JWT_SECRET_CODE;
+    const token = jwt.sign(userCopy, secretKey, options);
+    userCopy.sessions.push(token);
+
+
+
+
+
     if (!user) {
       return res.status(401).json({
         status: 401,
@@ -212,16 +246,20 @@ authRouter.post("/login", async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      status: 200,
-      message: "Login successful",
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        phone: user.phone,
-      },
-    });
+    try {
+      const updatedUserFromDB = await User.findByIdAndUpdate(userCopy._id, userCopy, { new: true })
+      return res.status(200).json({
+        status: 200,
+        message: "Login successful",
+        user: updatedUserFromDB
+      });
+    } catch (e) {
+      return res.status(401).json({
+        status: 402,
+        message: e,
+      });
+    }
+
   } catch (error) {
     console.error("Login error:", error);
 
@@ -284,12 +322,25 @@ authRouter.post("/forgot-password", async (req, res) => {
 
     await user.save();
 
-    console.log(
-      `Generated OTP for ${validatedEmail}: ${otp}`
-    );
+    // console.log(
+    //   `Generated OTP for ${validatedEmail}: ${otp}`
+    // );
 
-    // DEVELOPMENT ONLY
-    // In production, send OTP through email/SMS.
+    const templateParams = {
+      OTP_CODE: otp,
+      EXPIRY_MINUTES: 5,
+      email
+    }
+
+    emailjs.send(process.env.EMAILJS_SERVICE_ID, process.env.EMAILJS_TEMPLATE_ID, templateParams)
+      .then((response) => {
+        // console.log('SUCCESS!', response.status, response.text);
+      })
+      .catch((err) => {
+        console.error('FAILED...', err);
+      });
+
+
     return res.status(200).json({
       status: 200,
       message: "OTP generated successfully",
@@ -483,5 +534,70 @@ authRouter.post("/reset-password", async (req, res) => {
     });
   }
 });
+
+
+authRouter.post("/verify-token", async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token && token.length <= 0) {
+      res.status(401).json({
+        status: 401,
+        message: "Token Expired"
+      });
+    }
+
+    const isInDataBase = await User.findOne({sessions: token})
+    if (isInDataBase.sessions === undefined) {
+      res.status(401).json({
+        status: 401,
+        message: "Token Expired"
+      });
+    }
+
+    const response = verifyToken(token);
+    // console.log(response);
+
+    res.json({
+      status: 200,
+      message: "Token is Valid"
+    });
+    return;
+  } catch (e) {
+    if (e.message === "jwt malformed") {
+      res.status(401).json({
+        status: 401,
+        message: "Token Expired"
+      });
+    } else {
+      res.status(401).json({
+        status: 401,
+        message: "Token Expired"
+      });
+    }
+  }
+})
+
+const verifyToken = (token) => {
+  return jwt.verify(
+    token, process.env.JWT_SECRET_CODE
+  );
+}
+
+authRouter.post("/logout", async (req, res) => {
+  let token = req.headers.authorization;
+  token = token.split(" ")[1];
+  const session = await User.findOneAndUpdate({ sessions: token }, {
+    $set: {
+      sessions: [],
+    },
+  }, { new: true });
+  // console.log(session);
+
+  res.status(200).json({
+    status: 200,
+    message: "Logged out successfully"
+  });
+})
 
 module.exports = authRouter;

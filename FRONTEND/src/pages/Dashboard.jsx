@@ -1,6 +1,65 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
+import axios from "axios";
+
 
 function Dashboard() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      navigate('/login');
+    }
+    const isValidFunction = async() => {
+      const response = await checkCurrentToken(user?.sessions[0]);
+      if (response.status !== 200) {
+        navigate('/login');
+      }
+    }
+    isValidFunction();
+    
+  }, []);
+
+  const checkCurrentToken = async (token) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/verify-token`,
+        {
+          token,
+        }
+      );
+      return response.data;
+    } catch (e) {
+      return e;
+    }
+  }
+
+  const handleLogout = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (hanldeLogoutUsingApi(user.sessions[0])) {
+      localStorage.removeItem('user');
+      navigate('/login');
+    }
+  }
+
+  const hanldeLogoutUsingApi = async (token) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      if (response.status === 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
   return (
     <div className="dashboard-page">
 
@@ -62,6 +121,11 @@ function Dashboard() {
           <button className="sidebar-item">
             <span>♙</span>
             Team Members
+          </button>
+
+          <button className="sidebar-item logout-item" onClick={handleLogout}>
+            <span>⏻</span>
+            Logout
           </button>
         </div>
 

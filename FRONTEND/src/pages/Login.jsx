@@ -132,7 +132,6 @@ function Login() {
 
       setSuccessMessage("Login successful!");
 
-      console.log("Logged in user:", data.user);
 
       // Save user information
       localStorage.setItem(
