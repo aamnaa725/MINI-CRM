@@ -1,135 +1,25 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
-import axios from "axios";
+import { useAuthUser } from "../hooks/useAuthUser";
+import Sidebar from "../components/Sidebar";
+import { ROLES, DASHBOARD_COPY } from "../config/dashboardConfig";
 
 
 function Dashboard() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
-      navigate('/login');
-    }
-    const isValidFunction = async() => {
-      const response = await checkCurrentToken(user?.sessions[0]);
-      if (response.status !== 200) {
-        navigate('/login');
-      }
-    }
-    isValidFunction();
-    
-  }, []);
+  const { user, logout } = useAuthUser();
 
-  const checkCurrentToken = async (token) => {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/verify-token`,
-        {
-          token,
-        }
-      );
-      return response.data;
-    } catch (e) {
-      return e;
-    }
+  if (!user) {
+    return null;
   }
 
-  const handleLogout = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (hanldeLogoutUsingApi(user.sessions[0])) {
-      localStorage.removeItem('user');
-      navigate('/login');
-    }
-  }
-
-  const hanldeLogoutUsingApi = async (token) => {
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
-      if (response.status === 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  }
+  // Backend doesn't issue a role yet, so default to Org Admin until RBAC lands.
+  const role = user.role || ROLES.ORG_ADMIN;
+  const copy = DASHBOARD_COPY[role];
+  const firstName = user.fullName?.split(" ")[0] || "there";
 
   return (
     <div className="dashboard-page">
 
-      {/* ================= SIDEBAR ================= */}
-      <aside className="dashboard-sidebar">
-
-        <div className="dashboard-logo">
-          <h2>Mini CRM</h2>
-          <span>CRM</span>
-        </div>
-
-        <div className="sidebar-section">
-          <p className="sidebar-title">WORKSPACE</p>
-
-          <button className="sidebar-item active">
-            <span>▦</span>
-            Overview
-          </button>
-
-          <button className="sidebar-item">
-            <span>◎</span>
-            Leads
-          </button>
-
-          <button className="sidebar-item">
-            <span>●</span>
-            Customers
-          </button>
-
-          <button className="sidebar-item">
-            <span>◇</span>
-            Deals
-          </button>
-
-          <button className="sidebar-item">
-            <span>✓</span>
-            Tasks
-          </button>
-
-          <button className="sidebar-item">
-            <span>◷</span>
-            Activities
-          </button>
-
-          <button className="sidebar-item">
-            <span>▤</span>
-            Reports
-          </button>
-        </div>
-
-        <div className="sidebar-section bottom-section">
-          <p className="sidebar-title">MANAGE</p>
-
-          <button className="sidebar-item">
-            <span>⚙</span>
-            Settings
-          </button>
-
-          <button className="sidebar-item">
-            <span>♙</span>
-            Team Members
-          </button>
-
-          <button className="sidebar-item logout-item" onClick={handleLogout}>
-            <span>⏻</span>
-            Logout
-          </button>
-        </div>
-
-      </aside>
+      <Sidebar user={user} role={role} onLogout={logout} />
 
 
       {/* ================= MAIN CONTENT ================= */}
@@ -139,10 +29,8 @@ function Dashboard() {
         <header className="dashboard-header">
 
           <div>
-            <h1>Good morning!</h1>
-            <p>
-              Here's what's happening with your sales team today.
-            </p>
+            <h1>Good morning, {firstName}!</h1>
+            <p>{copy.subtitle}</p>
           </div>
 
           <div className="header-actions">
@@ -155,8 +43,13 @@ function Dashboard() {
               />
             </div>
 
+            <button className="notif-btn" aria-label="Notifications">
+              🔔
+              <span className="notif-dot"></span>
+            </button>
+
             <button className="add-lead-btn">
-              + Add new lead
+              {copy.addButtonLabel}
             </button>
 
           </div>
@@ -167,68 +60,22 @@ function Dashboard() {
         {/* ================= STAT CARDS ================= */}
         <section className="stats-grid">
 
-          <div className="stat-card">
+          {copy.statCards.map((stat) => (
+            <div className="stat-card" key={stat.label}>
 
-            <div className="stat-top">
-              <span>Total Leads</span>
-              <div className="stat-icon blue">◎</div>
+              <div className="stat-top">
+                <span>{stat.label}</span>
+                <div className={`stat-icon ${stat.color}`}>{stat.icon}</div>
+              </div>
+
+              <h2>{stat.value}</h2>
+
+              <p className={stat.positive ? "positive" : "negative"}>
+                {stat.trend} <span>vs last month</span>
+              </p>
+
             </div>
-
-            <h2>1,284</h2>
-
-            <p className="positive">
-              +12.4% <span>vs last month</span>
-            </p>
-
-          </div>
-
-
-          <div className="stat-card">
-
-            <div className="stat-top">
-              <span>Active Deals</span>
-              <div className="stat-icon purple">◇</div>
-            </div>
-
-            <h2>86</h2>
-
-            <p className="positive">
-              +8.2% <span>vs last month</span>
-            </p>
-
-          </div>
-
-
-          <div className="stat-card">
-
-            <div className="stat-top">
-              <span>Revenue</span>
-              <div className="stat-icon green">$</div>
-            </div>
-
-            <h2>$248.6K</h2>
-
-            <p className="positive">
-              +18.1% <span>vs last month</span>
-            </p>
-
-          </div>
-
-
-          <div className="stat-card">
-
-            <div className="stat-top">
-              <span>Win Rate</span>
-              <div className="stat-icon orange">%</div>
-            </div>
-
-            <h2>32.8%</h2>
-
-            <p className="negative">
-              -4.3% <span>vs last month</span>
-            </p>
-
-          </div>
+          ))}
 
         </section>
 
@@ -355,17 +202,17 @@ function Dashboard() {
         </section>
 
 
-        {/* ================= RECENT LEADS ================= */}
+        {/* ================= RECENT TABLE ================= */}
         <section className="dashboard-card recent-card">
 
           <div className="recent-header">
             <div>
-              <h3>Recent Leads</h3>
-              <p>Your latest sales opportunities</p>
+              <h3>{copy.tableTitle}</h3>
+              <p>{copy.tableSubtitle}</p>
             </div>
 
             <button className="view-all-btn">
-              View all leads →
+              {copy.viewAllLabel}
             </button>
           </div>
 
@@ -373,39 +220,21 @@ function Dashboard() {
           <div className="leads-table">
 
             <div className="table-head">
-              <span>Name</span>
-              <span>Company</span>
-              <span>Status</span>
-              <span>Value</span>
+              {copy.tableColumns.map((col) => (
+                <span key={col}>{col}</span>
+              ))}
             </div>
 
-
-            <div className="lead-row">
-              <span>John Doe</span>
-              <span>Acme Inc.</span>
-              <span className="status new-status">New</span>
-              <span>$12,500</span>
-            </div>
-
-
-            <div className="lead-row">
-              <span>Jane Smith</span>
-              <span>Globex Corp.</span>
-              <span className="status contacted-status">
-                Contacted
-              </span>
-              <span>$8,200</span>
-            </div>
-
-
-            <div className="lead-row">
-              <span>Mike Brown</span>
-              <span>Tech Solutions</span>
-              <span className="status proposal-status">
-                Proposal
-              </span>
-              <span>$15,800</span>
-            </div>
+            {copy.tableRows.map((row, index) => (
+              <div className="lead-row" key={index}>
+                <span>{row.a}</span>
+                <span>{row.b}</span>
+                <span className={`status ${row.statusClass}`}>
+                  {row.status}
+                </span>
+                <span>{row.c}</span>
+              </div>
+            ))}
 
           </div>
 
