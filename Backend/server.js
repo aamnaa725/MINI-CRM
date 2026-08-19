@@ -1,83 +1,144 @@
-require("dotenv").config();
-
+const authMiddleware = require("./middleware/authMiddleware");
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const authRouter = require("./routes/authRouter");
 const userRouter = require("./routes/userRouter");
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGODB_URI;
+// ======================================================
+// ENVIRONMENT VARIABLES
+// ======================================================
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no Origin header (e.g. Postman, server-to-server)
-    if (!origin) {
-      return callback(null, true);
-    }
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
 
-    try {
-      const url = new URL(origin);
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || "http://localhost:5173";
 
-      if (url.hostname === "localhost") {
-        return callback(null, true);
+// ======================================================
+// CHECK REQUIRED ENV VARIABLES
+// ======================================================
+
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI is missing from .env");
+  process.exit(1);
+}
+
+// ======================================================
+// CORS
+// ======================================================
+
+const allowedOrigins = [
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:5174"
+];
+
+app.use(
+  cors({
+    origin: function(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
       }
+    },
+    credentials: true,
+  })
+);
 
-      callback(new Error("Not allowed by CORS"));
-    } catch {
-      callback(new Error("Invalid origin"));
-    }
-  },
+// ======================================================
+// BODY PARSER
+// ======================================================
 
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
-
-// Middleware
-app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-app.use("/auth", authRouter);
-app.use("/users", userRouter);
+// ======================================================
+// COOKIE PARSER
+// ======================================================
 
-// Health check
-app.get("/status", (req, res) => {
-  res.json({
-    status: "Online",
-    database:
-      mongoose.connection.readyState === 1
-        ? "Connected"
-        : "Disconnected",
+app.use(cookieParser());
+
+// ======================================================
+// TEST ROUTE
+// ======================================================
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: 200,
+    message: "Mini CRM backend is running.",
   });
 });
 
-// Start server
-async function startServer() {
-  try {
-    await mongoose.connect(MONGO_URI, {
-      dbName: "mini-crm",
-    });
+// ======================================================
+// AUTH ROUTES
+// ======================================================
 
-    console.log("✅ Connected successfully to MongoDB");
+app.use("/auth", authRouter);
+
+// ======================================================
+// USER ROUTES
+// ======================================================
+
+app.use(
+  "/users",
+  authMiddleware,
+  userRouter
+);
+
+// ======================================================
+// 404 HANDLER
+// ======================================================
+
+app.use((req, res) => {
+  res.status(404).json({
+    status: 404,
+    message: "Route not found.",
+  });
+});
+
+// ======================================================
+// GLOBAL ERROR HANDLER
+// ======================================================
+
+app.use((err, req, res, next) => {
+  console.error("❌ SERVER ERROR:", err);
+
+  res.status(500).json({
+    status: 500,
+    message: "Internal server error.",
+  });
+});
+
+// ======================================================
+// CONNECT MONGODB THEN START SERVER
+// ======================================================
+
+const startServer = async () => {
+  try {
+    console.log("⏳ Connecting to MongoDB...");
+
+    await mongoose.connect(MONGO_URI);
+
+    console.log("✅ MongoDB connected successfully.");
 
     app.listen(PORT, () => {
-      console.log(
-        `🚀 Server is running at http://localhost:${PORT}`
-      );
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`✅ Frontend allowed: ${FRONTEND_URL}`);
     });
   } catch (error) {
-    console.error(
-      "❌ Database connection failed:",
-      error.message
-    );
+    console.error("❌ MongoDB connection failed:");
+    console.error(error.message);
 
     process.exit(1);
   }
-}
+};
 
 startServer();

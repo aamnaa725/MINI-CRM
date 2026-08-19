@@ -1,415 +1,131 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-import dashboard from "../../assets/dashboard.png";
-import avatar1 from "../../assets/1.png";
-import avatar2 from "../../assets/2.png";
-import avatar3 from "../../assets/3.png";
-import avatar4 from "../../assets/4.png";
-
-import "../styles/ForgotPassword.css";
-
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import AuthLayout from "../components/AuthLayout";
 
 function ForgotPassword() {
-
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [email, setEmail] = useState("");
+  const params = new URLSearchParams(location.search);
+  const urlEmail = params.get("email");
 
+  const [email, setEmail] = useState(urlEmail || "");
   const [loading, setLoading] = useState(false);
-
-  const [message, setMessage] = useState("");
-
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (urlEmail) setEmail(urlEmail);
+  }, [urlEmail]);
 
-  // ======================================================
-  // HANDLE FORGOT PASSWORD
-  // ======================================================
+  const sendOtp = async (normalizedEmail) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      }
+    );
+
+    let data = {};
+    try { data = await response.json(); } catch { data = {}; }
+
+    return { response, data };
+  };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
+    if (loading) return;
 
-    setMessage("");
     setError("");
+    const normalizedEmail = email.trim().toLowerCase();
 
-
-    // --------------------------------------------
-    // Check email
-    // --------------------------------------------
-
-    if (!email.trim()) {
-
-      setError("Please enter your email address");
-
+    if (!normalizedEmail) {
+      setError("Please enter your email address.");
       return;
     }
 
-
     try {
-
       setLoading(true);
+      const { response, data } = await sendOtp(normalizedEmail);
 
-
-      // --------------------------------------------
-      // Send email to backend
-      // --------------------------------------------
-
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            email: email.trim(),
-          }),
-        }
-      );
-
-
-      // --------------------------------------------
-      // Read backend response
-      // --------------------------------------------
-
-      const data = await response.json();
-
-
-      // --------------------------------------------
-      // Backend error
-      // --------------------------------------------
-
-      if (!response.ok) {
-
-        setError(
-          data.message || "Something went wrong"
-        );
-
+      // If it failed and it's NOT a cooldown error, show the error
+      if (!response.ok && !data.remainingSeconds) {
+        setError(data.message || "Unable to send OTP.");
         return;
       }
 
+      // If it succeeded OR they hit the cooldown limit,
+      // it means an OTP was already sent recently.
+      // So we just automatically navigate them to the OTP page!
+      const sentTo = data.email || normalizedEmail;
+      
+      sessionStorage.setItem("resetEmail", sentTo);
+      sessionStorage.setItem("otpFlow", "reset");
+      sessionStorage.removeItem("resetPasswordVerified");
 
-      // --------------------------------------------
-      // Success
-      // --------------------------------------------
-
-      setMessage(
-        data.message || "OTP generated successfully"
+      navigate(
+        `/reset-password?mode=reset&email=${encodeURIComponent(sentTo)}`,
+        { replace: true }
       );
-
-
-      // --------------------------------------------
-      // DEVELOPMENT ONLY
-      // --------------------------------------------
-      // Backend currently returns OTP so that
-      // we can test the complete reset flow.
-      // --------------------------------------------
-
-      console.log("Generated OTP:", data.otp);
-
-
-      // --------------------------------------------
-      // Save email
-      // --------------------------------------------
-
-      sessionStorage.setItem(
-        "resetEmail",
-        email.trim().toLowerCase()
-      );
-
-
-      // --------------------------------------------
-      // Save OTP for development testing
-      // --------------------------------------------
-
-      sessionStorage.setItem(
-        "resetOtp",
-        data.otp
-      );
-
-
-      // --------------------------------------------
-      // Redirect to reset password page
-      // --------------------------------------------
-
-      setTimeout(() => {
-
-        navigate("/reset-password");
-
-      }, 800);
-
-
-    } catch (error) {
-
-      console.error(
-        "Forgot password error:",
-        error
-      );
-
-
-      setError(
-        "Unable to connect to server. Please try again."
-      );
-
+    } catch {
+      setError("Unable to connect to server. Please try again.");
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
+  const buttonLabel = () => {
+    if (loading) return "Sending OTP...";
+    return "Reset Password";
+  };
 
   return (
+    <AuthLayout
+      title={<>Reset your<br />password easily</>}
+      subtitle="Enter your registered email address and we will help you recover your account."
+    >
+      <div className="auth-form-header">
+        <h2>Forgot Password?</h2>
+        <p>Enter your email address to receive a password reset OTP.</p>
+      </div>
 
-    <div className="container-main">
+      {error && (
+        <div className="auth-error-message">{error}</div>
+      )}
 
-
-      {/* ==================================================
-          LEFT PANEL
-      ================================================== */}
-
-      <div className="left-panel">
-
-
-        {/* LOGO */}
-
-        <div className="logo">
-
-          <h2>
-            Mini CRM
-          </h2>
-
-        </div>
-
-
-        {/* HERO */}
-
-        <div className="hero-content">
-
-          <h1>
-
-            Reset your
-            <br />
-            password easily
-
-          </h1>
-
-
-          <p>
-
-            Enter your registered email address
-            and we will help you recover your account.
-
-          </p>
-
-        </div>
-
-
-        {/* DASHBOARD */}
-
-        <div className="dashboard">
-
-          <img
-            src={dashboard}
-            alt="CRM Dashboard"
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="auth-input-group">
+          <label htmlFor="email">Email Address</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError("");
+            }}
+            autoComplete="email"
+            required
           />
-
         </div>
 
-
-        {/* TRUSTED TEAMS */}
-
-        <div className="trusted-teams">
-
-
-          <div className="avatars">
-
-            <img
-              src={avatar1}
-              alt="user"
-            />
-
-            <img
-              src={avatar2}
-              alt="user"
-            />
-
-            <img
-              src={avatar3}
-              alt="user"
-            />
-
-            <img
-              src={avatar4}
-              alt="user"
-            />
-
-          </div>
-
-
-          <div className="team-text">
-
-            <h3>
-              Trusted by 2,000+ Teams
-            </h3>
-
-            <p>
-              Helping businesses increase
-              productivity every day.
-            </p>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-      {/* ==================================================
-          RIGHT PANEL
-      ================================================== */}
-
-      <div className="right-panel">
-
-
-        <div className="form-container">
-
-
-          {/* HEADING */}
-
-          <h2>
-            Forgot Password?
-          </h2>
-
-
-          <p>
-            Enter your email address to receive
-            a password reset OTP.
-          </p>
-
-
-          {/* ==================================================
-              SUCCESS MESSAGE
-          ================================================== */}
-
-          {message && (
-
-            <div className="success-message">
-
-              {message}
-
-            </div>
-
-          )}
-
-
-          {/* ==================================================
-              ERROR MESSAGE
-          ================================================== */}
-
-          {error && (
-
-            <div className="error-message">
-
-              {error}
-
-            </div>
-
-          )}
-
-
-          {/* ==================================================
-              FORM
-          ================================================== */}
-
-          <form onSubmit={handleSubmit}>
-
-
-            {/* EMAIL */}
-
-            <div className="input-group">
-
-              <label>
-                Email Address
-              </label>
-
-
-              <input
-
-                type="email"
-
-                name="email"
-
-                placeholder="Enter your email"
-
-                value={email}
-
-                onChange={(e) =>
-                  setEmail(e.target.value)
-                }
-
-                required
-
-              />
-
-            </div>
-
-
-            {/* RESET BUTTON */}
-
-            <button
-
-              type="submit"
-
-              className="register-btn"
-
-              disabled={loading}
-
-            >
-
-              {loading
-                ? "Checking..."
-                : "Reset Password"}
-
-            </button>
-
-
-            {/* LOGIN */}
-
-            <p className="login-link">
-
-              Remember your password?
-
-              {" "}
-
-              <Link to="/login">
-                Login
-              </Link>
-
-            </p>
-
-
-          </form>
-
-
-        </div>
-
-
-      </div>
-
-
-    </div>
-
+        <button
+          type="submit"
+          className="auth-btn"
+          disabled={loading}
+        >
+          {buttonLabel()}
+        </button>
+      </form>
+
+      <p className="auth-login-link">
+        Remember your password? <Link to="/login">Login</Link>
+      </p>
+    </AuthLayout>
   );
-
 }
-
 
 export default ForgotPassword;

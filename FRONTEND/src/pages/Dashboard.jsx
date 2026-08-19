@@ -1,116 +1,332 @@
-import "../styles/Dashboard.css";
-import { useAuthUser } from "../hooks/useAuthUser";
-import Sidebar from "../components/Sidebar";
-import { ROLES, DASHBOARD_COPY } from "../config/dashboardConfig";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../api/apiFetch";
 
+import {
+  FaChartLine,
+  FaUsers,
+  FaHandshake,
+  FaDollarSign,
+  FaHome,
+  FaUserPlus,
+  FaUserTie,
+  FaCog,
+  FaSignOutAlt,
+  FaSearch,
+} from "react-icons/fa";
+
+import "../styles/Dashboard.css";
 
 function Dashboard() {
-  const { user, logout } = useAuthUser();
+  const navigate = useNavigate();
 
-  if (!user) {
-    return null;
-  }
+  const [search, setSearch] = useState("");
 
-  // Backend doesn't issue a role yet, so default to Org Admin until RBAC lands.
-  const role = user.role || ROLES.ORG_ADMIN;
-  const copy = DASHBOARD_COPY[role];
-  const firstName = user.fullName?.split(" ")[0] || "there";
+  const stats = [
+    {
+      title: "Total Leads",
+      value: "1,248",
+      change: "+12.5%",
+      description: "vs last month",
+      icon: <FaUsers />,
+      iconClass: "blue",
+      changeClass: "positive",
+    },
+    {
+      title: "Qualified Leads",
+      value: "846",
+      change: "+8.2%",
+      description: "vs last month",
+      icon: <FaUserTie />,
+      iconClass: "purple",
+      changeClass: "positive",
+    },
+    {
+      title: "Deals Closed",
+      value: "126",
+      change: "+15.4%",
+      description: "vs last month",
+      icon: <FaHandshake />,
+      iconClass: "green",
+      changeClass: "positive",
+    },
+    {
+      title: "Revenue",
+      value: "$48,250",
+      change: "+10.8%",
+      description: "vs last month",
+      icon: <FaDollarSign />,
+      iconClass: "orange",
+      changeClass: "positive",
+    },
+  ];
+
+  const deals = [
+    {
+      name: "New Leads",
+      value: "88%",
+      className: "blue-fill",
+    },
+    {
+      name: "Qualified",
+      value: "75%",
+      className: "purple-fill",
+    },
+    {
+      name: "Proposal",
+      value: "65%",
+      className: "orange-fill",
+    },
+    {
+      name: "Negotiation",
+      value: "50%",
+      className: "pink-fill",
+    },
+    {
+      name: "Closed",
+      value: "65%",
+      className: "green-fill",
+    },
+  ];
+
+  const leads = [
+    {
+      name: "John Smith",
+      company: "Acme Inc.",
+      status: "New",
+      statusClass: "new-status",
+      value: "$4,500",
+    },
+    {
+      name: "Sarah Johnson",
+      company: "Tech Solutions",
+      status: "Contacted",
+      statusClass: "contacted-status",
+      value: "$7,200",
+    },
+    {
+      name: "Michael Brown",
+      company: "Global Systems",
+      status: "Proposal",
+      statusClass: "proposal-status",
+      value: "$9,800",
+    },
+    {
+      name: "Emily Davis",
+      company: "Bright Labs",
+      status: "New",
+      statusClass: "new-status",
+      value: "$3,600",
+    },
+  ];
+
+  const filteredLeads = leads.filter((lead) =>
+    `${lead.name} ${lead.company}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  // ======================================================
+  // LOGOUT
+  // ======================================================
+
+  const handleLogout = async () => {
+    try {
+      // Call the backend to clear the JWT cookie and reset the token in the DB
+      await apiFetch("/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Failed to log out from backend:", error);
+    }
+
+    // Clear login session
+    sessionStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("user");
+
+    // Clear OTP / authentication flow data
+    sessionStorage.removeItem("resetEmail");
+    sessionStorage.removeItem("otpFlow");
+    sessionStorage.removeItem("resetPasswordVerified");
+
+    // Clear old localStorage values if they exist
+    localStorage.removeItem("user");
+    localStorage.removeItem("rememberedEmail");
+
+    // Replace instead of normal navigation.
+    // This prevents returning to Dashboard with the Back button.
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="dashboard-page">
+      {/* ===========================
+          SIDEBAR
+      =========================== */}
 
-      <Sidebar user={user} role={role} onLogout={logout} />
+      <aside className="dashboard-sidebar">
+        <div className="dashboard-logo">
+          <h2>Mini CRM</h2>
+          <span>PRO</span>
+        </div>
 
+        <div className="sidebar-section">
+          <p className="sidebar-title">MAIN</p>
 
-      {/* ================= MAIN CONTENT ================= */}
+          <button className="sidebar-item active">
+            <span>
+              <FaHome />
+            </span>
+            Dashboard
+          </button>
+
+          <button className="sidebar-item">
+            <span>
+              <FaUsers />
+            </span>
+            Leads
+          </button>
+
+          <button className="sidebar-item">
+            <span>
+              <FaHandshake />
+            </span>
+            Deals
+          </button>
+
+          <button className="sidebar-item">
+            <span>
+              <FaChartLine />
+            </span>
+            Analytics
+          </button>
+        </div>
+
+        <div className="sidebar-section bottom-section">
+          <p className="sidebar-title">MANAGE</p>
+
+          <button className="sidebar-item">
+            <span>
+              <FaUserPlus />
+            </span>
+            Add Lead
+          </button>
+
+          <button className="sidebar-item">
+            <span>
+              <FaCog />
+            </span>
+            Settings
+          </button>
+
+          <button
+            type="button"
+            className="sidebar-item"
+            onClick={handleLogout}
+          >
+            <span>
+              <FaSignOutAlt />
+            </span>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* ===========================
+          MAIN CONTENT
+      =========================== */}
+
       <main className="dashboard-content">
+        {/* HEADER */}
 
-        {/* Header */}
         <header className="dashboard-header">
-
           <div>
-            <h1>Good morning, {firstName}!</h1>
-            <p>{copy.subtitle}</p>
+            <h1>Dashboard</h1>
+
+            <p>
+              Welcome back! Here's what's happening with your
+              business today.
+            </p>
           </div>
 
           <div className="header-actions">
-
             <div className="search-box">
-              <span>⌕</span>
+              <span>
+                <FaSearch />
+              </span>
+
               <input
                 type="text"
-                placeholder="Search anything..."
+                placeholder="Search leads..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
-            <button className="notif-btn" aria-label="Notifications">
-              🔔
-              <span className="notif-dot"></span>
+            <button type="button" className="add-lead-btn">
+              + Add Lead
             </button>
-
-            <button className="add-lead-btn">
-              {copy.addButtonLabel}
-            </button>
-
           </div>
-
         </header>
 
+        {/* ===========================
+            STATS
+        =========================== */}
 
-        {/* ================= STAT CARDS ================= */}
         <section className="stats-grid">
-
-          {copy.statCards.map((stat) => (
-            <div className="stat-card" key={stat.label}>
-
+          {stats.map((stat) => (
+            <div className="stat-card" key={stat.title}>
               <div className="stat-top">
-                <span>{stat.label}</span>
-                <div className={`stat-icon ${stat.color}`}>{stat.icon}</div>
+                <span>{stat.title}</span>
+
+                <div
+                  className={`stat-icon ${stat.iconClass}`}
+                >
+                  {stat.icon}
+                </div>
               </div>
 
               <h2>{stat.value}</h2>
 
-              <p className={stat.positive ? "positive" : "negative"}>
-                {stat.trend} <span>vs last month</span>
+              <p className={stat.changeClass}>
+                {stat.change}{" "}
+                <span>{stat.description}</span>
               </p>
-
             </div>
           ))}
-
         </section>
 
+        {/* ===========================
+            MIDDLE GRID
+        =========================== */}
 
-        {/* ================= MIDDLE SECTION ================= */}
         <section className="middle-grid">
+          {/* REVENUE */}
 
-          {/* Revenue */}
           <div className="dashboard-card revenue-card">
-
             <div className="card-heading">
-              <div>
-                <h3>Revenue Overview</h3>
-                <p>Monthly performance</p>
-              </div>
+              <h3>Revenue Overview</h3>
+
+              <p>Monthly revenue performance</p>
             </div>
 
             <div className="revenue-value">
-              <strong>$248,620</strong>
-              <span>+18.1% from last month</span>
+              <strong>$48,250</strong>
+
+              <span>+10.8%</span>
             </div>
 
             <div className="chart">
-
               <div className="chart-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
               </div>
 
-              <div className="chart-line line-one"></div>
-              <div className="chart-line line-two"></div>
-              <div className="chart-line line-three"></div>
-              <div className="chart-line line-four"></div>
+              <div className="chart-line line-one" />
+              <div className="chart-line line-two" />
+              <div className="chart-line line-three" />
+              <div className="chart-line line-four" />
 
               <div className="chart-labels">
                 <span>Jan</span>
@@ -119,129 +335,97 @@ function Dashboard() {
                 <span>Apr</span>
                 <span>May</span>
                 <span>Jun</span>
-                <span>Jul</span>
-                <span>Aug</span>
-                <span>Sep</span>
-                <span>Oct</span>
-                <span>Nov</span>
-                <span>Dec</span>
               </div>
-
             </div>
-
           </div>
 
+          {/* DEALS */}
 
-          {/* Deals */}
           <div className="dashboard-card deals-card">
-
             <div className="card-heading">
-              <div>
-                <h3>Deals by Stage</h3>
-                <p>86 active deals · $412K value</p>
-              </div>
+              <h3>Deal Progress</h3>
+
+              <p>Current pipeline progress</p>
             </div>
 
+            {deals.map((deal) => (
+              <div className="deal-row" key={deal.name}>
+                <span>{deal.name}</span>
 
-            <div className="deal-row">
-              <span>New</span>
+                <div className="progress">
+                  <div
+                    className={`progress-fill ${deal.className}`}
+                    style={{
+                      width: deal.value,
+                    }}
+                  />
+                </div>
 
-              <div className="progress">
-                <div className="progress-fill blue-fill"></div>
+                <strong>{deal.value}</strong>
               </div>
-
-              <strong>24</strong>
-            </div>
-
-
-            <div className="deal-row">
-              <span>Contacted</span>
-
-              <div className="progress">
-                <div className="progress-fill purple-fill"></div>
-              </div>
-
-              <strong>18</strong>
-            </div>
-
-
-            <div className="deal-row">
-              <span>Proposal</span>
-
-              <div className="progress">
-                <div className="progress-fill orange-fill"></div>
-              </div>
-
-              <strong>16</strong>
-            </div>
-
-
-            <div className="deal-row">
-              <span>Negotiation</span>
-
-              <div className="progress">
-                <div className="progress-fill pink-fill"></div>
-              </div>
-
-              <strong>12</strong>
-            </div>
-
-
-            <div className="deal-row">
-              <span>Won</span>
-
-              <div className="progress">
-                <div className="progress-fill green-fill"></div>
-              </div>
-
-              <strong>16</strong>
-            </div>
-
+            ))}
           </div>
-
         </section>
 
+        {/* ===========================
+            RECENT LEADS
+        =========================== */}
 
-        {/* ================= RECENT TABLE ================= */}
         <section className="dashboard-card recent-card">
-
           <div className="recent-header">
             <div>
-              <h3>{copy.tableTitle}</h3>
-              <p>{copy.tableSubtitle}</p>
+              <h3>Recent Leads</h3>
+
+              <p>
+                Latest leads added to your pipeline
+              </p>
             </div>
 
-            <button className="view-all-btn">
-              {copy.viewAllLabel}
+            <button
+              type="button"
+              className="view-all-btn"
+            >
+              View All
             </button>
           </div>
 
-
           <div className="leads-table">
-
             <div className="table-head">
-              {copy.tableColumns.map((col) => (
-                <span key={col}>{col}</span>
-              ))}
+              <span>Name</span>
+              <span>Company</span>
+              <span>Status</span>
+              <span>Value</span>
             </div>
 
-            {copy.tableRows.map((row, index) => (
-              <div className="lead-row" key={index}>
-                <span>{row.a}</span>
-                <span>{row.b}</span>
-                <span className={`status ${row.statusClass}`}>
-                  {row.status}
+            {filteredLeads.map((lead) => (
+              <div
+                className="lead-row"
+                key={`${lead.name}-${lead.company}`}
+              >
+                <span>{lead.name}</span>
+
+                <span>{lead.company}</span>
+
+                <span>
+                  <span
+                    className={`status ${lead.statusClass}`}
+                  >
+                    {lead.status}
+                  </span>
                 </span>
-                <span>{row.c}</span>
+
+                <span>{lead.value}</span>
               </div>
             ))}
 
+            {filteredLeads.length === 0 && (
+              <div className="lead-row">
+                <span>No leads found.</span>
+              </div>
+            )}
           </div>
-
         </section>
-
       </main>
-
     </div>
   );
 }

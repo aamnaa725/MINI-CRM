@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import dashboard from "../../assets/dashboard.png";
-import avatar1 from "../../assets/1.png";
-import avatar2 from "../../assets/2.png";
-import avatar3 from "../../assets/3.png";
-import avatar4 from "../../assets/4.png";
-
-import "../styles/Register.css";
+import { FaCheck, FaCircle } from "react-icons/fa";
+import AuthLayout from "../components/AuthLayout";
+import PasswordInput from "../components/PasswordInput";
+import Button from "../components/Button";
 
 function Register() {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -22,121 +16,52 @@ function Register() {
     confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  // =========================
-  // HANDLE INPUT
-  // =========================
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((previousData) => ({
-      ...previousData,
+    setFormData((previous) => ({
+      ...previous,
       [name]: value,
     }));
-
-    // Remove error for the field being edited
-    setErrors((previousErrors) => ({
-      ...previousErrors,
-      [name]: "",
-      general: "",
-    }));
-
-    setSuccessMessage("");
+    setError("");
   };
 
-  // =========================
-  // VALIDATE FORM
-  // =========================
+  const password = formData.password;
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    // FULL NAME
-    const fullName = formData.fullName.trim();
-
-    if (!fullName) {
-      newErrors.fullName = "Full Name is required";
-    } else if (fullName.length < 3) {
-      newErrors.fullName = "Name must be at least 3 characters";
-    } else if (fullName.length > 50) {
-      newErrors.fullName = "Name cannot exceed 50 characters";
-    } else if (!/^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/.test(fullName)) {
-      newErrors.fullName =
-        "Name can contain letters, spaces, apostrophes and hyphens only";
-    }
-
-    // EMAIL
-    const email = formData.email.trim();
-
-    if (!email) {
-      newErrors.email = "Email address is required";
-    } else if (
-      !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)
-    ) {
-      newErrors.email = "Enter a valid email address";
-    }
-
-    // PHONE
-    const phone = formData.phone.trim();
-
-    if (!phone) {
-      newErrors.phone = "Phone number is required";
-    } else {
-      const cleanPhone = phone.replace(/[\s-]/g, "");
-
-      if (!/^\+?[0-9]{10,15}$/.test(cleanPhone)) {
-        newErrors.phone =
-          "Enter a valid phone number (10-15 digits)";
-      }
-    }
-
-    // PASSWORD
-    const password = formData.password;
-
-    if (!password) {
-      newErrors.password = "Password is required";
-    } else if (password.length < 8) {
-      newErrors.password =
-        "Password must be at least 8 characters";
-    } else if (!/[A-Z]/.test(password)) {
-      newErrors.password =
-        "Password must contain at least one uppercase letter";
-    } else if (!/[a-z]/.test(password)) {
-      newErrors.password =
-        "Password must contain at least one lowercase letter";
-    } else if (!/[0-9]/.test(password)) {
-      newErrors.password =
-        "Password must contain at least one number";
-    } else if (!/[^A-Za-z0-9]/.test(password)) {
-      newErrors.password =
-        "Password must contain at least one special character";
-    }
-
-    // CONFIRM PASSWORD
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword =
-        "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword =
-        "Passwords do not match";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
+  const passwordRequirements = {
+    minLength: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
   };
 
-  // =========================
-  // CREATE USER
-  // =========================
+  const allRequirementsMet =
+    passwordRequirements.minLength &&
+    passwordRequirements.uppercase &&
+    passwordRequirements.lowercase &&
+    passwordRequirements.number &&
+    passwordRequirements.special;
 
-  const CreateUserData = async (userData) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setError("");
+
+    if (!allRequirementsMet) {
+      setError("Please make sure your password meets all the requirements.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     try {
-      setIsLoading(true);
+      setLoading(true);
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/register`,
@@ -145,343 +70,180 @@ function Register() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(userData),
+          body: JSON.stringify(formData),
         }
       );
 
-      const data = await response.json();
+      let data = {};
 
-      console.log("Backend response:", data);
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
       if (!response.ok) {
-        setErrors({
-          general: data.message || "Registration failed",
-        });
-
+        setError(data.message || "Registration failed.");
         return;
       }
 
-      // SUCCESS
-     // SUCCESS
-setErrors({});
-setSuccessMessage("Account created successfully! Redirecting to login...");
+      const registeredEmail = data.email || formData.email;
 
-// Redirect to login page and send only the email
-setTimeout(() => {
-  navigate("/login", {
-    state: {
-      email: userData.email,
-    },
-  });
-}, 1000);
+      sessionStorage.setItem("resetEmail", registeredEmail);
+      sessionStorage.setItem("otpFlow", "signup");
+      sessionStorage.removeItem("otpVerified");
+      sessionStorage.removeItem("resetPasswordVerified");
+      sessionStorage.removeItem("isLoggedIn");
+      sessionStorage.removeItem("user");
+
+      navigate(
+        `/reset-password?mode=signup&email=${encodeURIComponent(
+          registeredEmail
+        )}`,
+        { replace: true }
+      );
     } catch (error) {
-      console.error("Fetch failed:", error);
-
-      setErrors({
-        general:
-          "Unable to connect to the server. Please try again.",
-      });
+      console.error("Registration error:", error);
+      setError("Unable to connect to server. Please try again.");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
-
-  // =========================
-  // SUBMIT
-  // =========================
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setSuccessMessage("");
-
-    const isValid = validateForm();
-
-    if (!isValid) {
-      return;
-    }
-
-    await CreateUserData(formData);
   };
 
   return (
-    <div className="container-main">
-
-      {/* LEFT PANEL */}
-
-      <div className="left-panel">
-
-        <div className="logo">
-          <h2>Mini CRM</h2>
-        </div>
-
-        <div className="hero-content">
-          <h1>
-            Manage your sales <br />
-            pipeline like a pro
-          </h1>
-
-          <p>
-            Track leads, close deals, and grow your business with a
-            modern CRM designed for growing teams.
-          </p>
-        </div>
-
-        <div className="dashboard">
-          <img src={dashboard} alt="Dashboard" />
-        </div>
-
-        <div className="trusted-teams">
-
-          <div className="avatars">
-            <img src={avatar1} alt="user" />
-            <img src={avatar2} alt="user" />
-            <img src={avatar3} alt="user" />
-            <img src={avatar4} alt="user" />
-          </div>
-
-          <div className="team-text">
-            <h3>
-              Trusted by 2,000+ Teams
-            </h3>
-
-            <p>
-              Helping businesses increase productivity every day.
-            </p>
-          </div>
-
-        </div>
-
+    <AuthLayout
+      title={
+        <>
+          Manage your<br />business smarter
+        </>
+      }
+      subtitle="Organize customers, track activity and grow your business with Mini CRM."
+    >
+      <div className="auth-form-header">
+        <h2>Create Account</h2>
+        <p>Create your Mini CRM account to get started.</p>
       </div>
 
-      {/* RIGHT PANEL */}
+      {error && (
+        <div className="auth-error-message">
+          {error}
+        </div>
+      )}
 
-      <div className="right-panel">
-
-        <div className="form-container">
-
-          <h2>Create your Account</h2>
-
-          <p>
-            Join thousands of businesses managing their sales efficiently.
-          </p>
-
-          {/* GENERAL ERROR */}
-
-          {errors.general && (
-            <div className="general-error">
-              {errors.general}
-            </div>
-          )}
-
-          {/* SUCCESS */}
-
-          {successMessage && (
-            <div className="success-message">
-              {successMessage}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-
-            {/* FULL NAME */}
-
-            <div className="input-group">
-
-              <label>Full Name</label>
-
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={handleChange}
-                className={errors.fullName ? "input-error" : ""}
-                maxLength={50}
-                required
-              />
-
-              {errors.fullName && (
-                <span className="error-message">
-                  {errors.fullName}
-                </span>
-              )}
-
-            </div>
-
-            {/* EMAIL */}
-
-            <div className="input-group">
-
-              <label>Email Address</label>
-
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-                className={errors.email ? "input-error" : ""}
-                required
-              />
-
-              {errors.email && (
-                <span className="error-message">
-                  {errors.email}
-                </span>
-              )}
-
-            </div>
-
-            {/* PHONE */}
-
-            <div className="input-group">
-
-              <label>Phone Number</label>
-
-              <input
-                type="tel"
-                name="phone"
-                placeholder="+92 300 1234567"
-                value={formData.phone}
-                onChange={handleChange}
-                className={errors.phone ? "input-error" : ""}
-                required
-              />
-
-              {errors.phone && (
-                <span className="error-message">
-                  {errors.phone}
-                </span>
-              )}
-
-            </div>
-
-            {/* PASSWORD */}
-
-            <div className="input-group">
-
-              <label>Password</label>
-
-              <div
-                className={`password-box ${
-                  errors.password ? "password-error" : ""
-                }`}
-              >
-
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Create password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                >
-                  {showPassword ? (
-                    <FaEyeSlash />
-                  ) : (
-                    <FaEye />
-                  )}
-                </button>
-
-              </div>
-
-              {errors.password && (
-                <span className="error-message">
-                  {errors.password}
-                </span>
-              )}
-
-            </div>
-
-            {/* CONFIRM PASSWORD */}
-
-            <div className="input-group">
-
-              <label>Confirm Password</label>
-
-              <div
-                className={`password-box ${
-                  errors.confirmPassword
-                    ? "password-error"
-                    : ""
-                }`}
-              >
-
-                <input
-                  type={
-                    showConfirmPassword
-                      ? "text"
-                      : "password"
-                  }
-                  name="confirmPassword"
-                  placeholder="Confirm password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(
-                      !showConfirmPassword
-                    )
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <FaEyeSlash />
-                  ) : (
-                    <FaEye />
-                  )}
-                </button>
-
-              </div>
-
-              {errors.confirmPassword && (
-                <span className="error-message">
-                  {errors.confirmPassword}
-                </span>
-              )}
-
-            </div>
-
-            {/* REGISTER BUTTON */}
-
-            <button
-              type="submit"
-              className="register-btn"
-              disabled={isLoading}
-            >
-              {isLoading
-                ? "Creating Account..."
-                : "Create Account"}
-            </button>
-
-            <p className="login-link">
-
-              Already have an account?{" "}
-
-              <Link to="/login">
-                Login
-              </Link>
-
-            </p>
-
-          </form>
-
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="auth-input-group">
+          <label htmlFor="fullName">Full Name</label>
+          <input
+            id="fullName"
+            type="text"
+            name="fullName"
+            placeholder="Enter your full name"
+            value={formData.fullName}
+            onChange={handleChange}
+            autoComplete="name"
+            required
+          />
         </div>
 
-      </div>
+        <div className="auth-input-group">
+          <label htmlFor="email">Email Address</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+            autoComplete="email"
+            required
+          />
+        </div>
 
-    </div>
+        <div className="auth-input-group">
+          <label htmlFor="phone">Phone Number</label>
+          <input
+            id="phone"
+            type="tel"
+            name="phone"
+            placeholder="Enter your phone number"
+            value={formData.phone}
+            onChange={handleChange}
+            autoComplete="tel"
+            required
+          />
+        </div>
+
+        <PasswordInput
+          id="password"
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          value={formData.password}
+          onChange={handleChange}
+          autoComplete="new-password"
+          required
+        />
+
+        <div className="auth-password-info">
+          <p>Password requirements:</p>
+          <ul className="auth-requirements">
+            <li className={passwordRequirements.minLength ? "valid" : ""}>
+              <span>{passwordRequirements.minLength ? <FaCheck /> : <FaCircle />}</span>
+              <span>At least 8 characters</span>
+            </li>
+            <li className={passwordRequirements.uppercase ? "valid" : ""}>
+              <span>{passwordRequirements.uppercase ? <FaCheck /> : <FaCircle />}</span>
+              <span>At least one uppercase letter</span>
+            </li>
+            <li className={passwordRequirements.lowercase ? "valid" : ""}>
+              <span>{passwordRequirements.lowercase ? <FaCheck /> : <FaCircle />}</span>
+              <span>At least one lowercase letter</span>
+            </li>
+            <li className={passwordRequirements.number ? "valid" : ""}>
+              <span>{passwordRequirements.number ? <FaCheck /> : <FaCircle />}</span>
+              <span>At least one number</span>
+            </li>
+            <li className={passwordRequirements.special ? "valid" : ""}>
+              <span>{passwordRequirements.special ? <FaCheck /> : <FaCircle />}</span>
+              <span>At least one special character</span>
+            </li>
+          </ul>
+        </div>
+
+        <PasswordInput
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Confirm Password"
+          placeholder="Confirm your password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          autoComplete="new-password"
+          required
+        />
+
+        {formData.confirmPassword && (
+          <div
+            className={
+              formData.password === formData.confirmPassword
+                ? "auth-password-match success"
+                : "auth-password-match error"
+            }
+          >
+            {formData.password === formData.confirmPassword
+              ? "✓ Passwords match"
+              : "✕ Passwords do not match"}
+          </div>
+        )}
+
+        <Button type="submit" disabled={loading}>
+          {loading ? "Creating Account..." : "Create Account"}
+        </Button>
+      </form>
+
+      <p className="auth-login-link">
+        Already have an account? <Link to="/login">Login</Link>
+      </p>
+    </AuthLayout>
   );
 }
 
