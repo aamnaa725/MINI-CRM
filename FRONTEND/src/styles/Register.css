@@ -1,13 +1,43 @@
-/* ===========================
-Google Font
-=========================== */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* =========================================================
+   RESET
+========================================================= */
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-/* ===========================
-Animations
-=========================== */
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f7f8fc;
+  overflow-x: hidden;
+}
+
+button,
+input {
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
 
 @keyframes fadeInLeft {
   from {
@@ -59,509 +89,1210 @@ Animations
   }
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
+/* =========================================================
+   PAGE
+========================================================= */
 
-  50% {
-    transform: scale(1.04);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
-
-/* ===========================
-Global
-=========================== */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-body {
-  background: #f7f8fc;
-}
-
-
-/* ===========================
-Main Container
-=========================== */
-
+.register-page,
 .container-main {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+
   display: flex;
-  min-height: 100vh;
+
+  overflow: hidden;
+
+  background: #f8fafc;
 }
 
+/* =========================================================
+   LEFT PANEL
+========================================================= */
 
-/* ===========================
-Left Panel
-=========================== */
-
+.register-left-panel,
 .left-panel {
   width: 50%;
-  background: linear-gradient(135deg, #5B4BFF, #7B61FF);
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  flex: 0 0 50%;
+
+  background: linear-gradient(
+    135deg,
+    #5b4bff 0%,
+    #7b61ff 100%
+  );
+
   color: white;
-  padding: 50px;
+
+  padding: 40px 50px;
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  animation: fadeInLeft .9s ease;
+
+  overflow: hidden;
+
+  animation: fadeInLeft 0.9s ease;
 }
 
+/* =========================================================
+   LOGO
+========================================================= */
 
-/* ===========================
-Logo
-=========================== */
-
+.register-logo,
 .logo {
   display: flex;
   align-items: center;
   gap: 18px;
-  animation: fadeUp .8s ease;
+
+  flex-shrink: 0;
+
+  animation: fadeUp 0.8s ease;
 }
 
+.register-logo img,
 .logo img {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
+
   object-fit: contain;
 }
 
+.register-logo h2,
 .logo h2 {
-  font-size: 36px;
+  font-size: 32px;
+  line-height: 1.1;
+
   font-weight: 700;
+
+  color: white;
 }
 
+/* =========================================================
+   HERO
+========================================================= */
 
-/* ===========================
-Hero Section
-=========================== */
-
+.register-hero-content,
 .hero-content {
-  margin-top: 40px;
+  width: 100%;
+  max-width: 620px;
+
+  margin: auto 0;
+
   animation: fadeUp 1s ease;
 }
 
+.register-hero-content h1,
 .hero-content h1 {
-  font-size: 52px;
-  line-height: 1.2;
+  font-size: clamp(40px, 4vw, 56px);
+
+  line-height: 1.12;
+
   font-weight: 700;
+
+  color: white;
+
   margin-bottom: 20px;
 }
 
+.register-hero-content p,
 .hero-content p {
-  font-size: 18px;
-  color: #ececec;
-  line-height: 1.7;
-  width: 90%;
+  width: 100%;
+  max-width: 600px;
+
+  font-size: 17px;
+  line-height: 1.65;
+
+  color: rgba(255, 255, 255, 0.92);
+
+  margin-bottom: 25px;
 }
 
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
-/* ===========================
-Dashboard
-=========================== */
-
+.register-dashboard,
 .dashboard {
+  width: 100%;
+
   display: flex;
   justify-content: center;
-  margin: 40px 0;
+
+  margin: 25px 0;
 }
 
+.register-dashboard img,
 .dashboard img {
-  background-color: #111827;
+  display: block;
+
   width: 90%;
   max-width: 550px;
-  border-radius: 18px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, .2);
-  transition: .4s;
+  height: auto;
+
+  background: #111827;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.22);
+
   animation: float 5s ease-in-out infinite;
+
+  transition: 0.3s ease;
 }
 
+.register-dashboard img:hover,
 .dashboard img:hover {
   transform: scale(1.03);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .3);
+
+  box-shadow:
+    0 25px 55px rgba(0, 0, 0, 0.3);
 }
 
+/* =========================================================
+   TRUSTED TEAMS
+========================================================= */
 
-/* ===========================
-Trusted Teams
-=========================== */
-
+.register-trusted-teams,
 .trusted-teams {
   display: flex;
   align-items: center;
-  gap: 20px;
+
+  gap: 18px;
+
+  flex-shrink: 0;
 }
 
+.register-avatars,
 .avatars {
   display: flex;
+  align-items: center;
+
+  flex-shrink: 0;
 }
 
+.register-avatars img,
 .avatars img {
-  width: 45px;
-  height: 45px;
+  width: 44px;
+  height: 44px;
+
+  object-fit: cover;
+
   border-radius: 50%;
+
   border: 3px solid white;
+
   margin-left: -10px;
-  transition: .3s;
-  cursor: pointer;
+
+  flex-shrink: 0;
 }
 
+.register-avatars img:first-child,
 .avatars img:first-child {
   margin-left: 0;
 }
 
+.register-team-text,
+.team-text {
+  min-width: 0;
+}
+
+.register-team-text h3,
 .team-text h3 {
-  font-size: 18px;
-  margin-bottom: 4px;
+  font-size: 16px;
+
+  line-height: 1.3;
+
+  font-weight: 600;
+
+  margin-bottom: 3px;
+
+  color: white;
 }
 
+.register-team-text p,
 .team-text p {
-  font-size: 14px;
-  color: #ececec;
+  font-size: 12px;
+
+  line-height: 1.4;
+
+  color: rgba(255, 255, 255, 0.9);
 }
 
+/* =========================================================
+   RIGHT PANEL
+========================================================= */
 
-/* ===========================
-Right Panel
-=========================== */
-
+.register-right-panel,
 .right-panel {
   width: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #F8FAFC;
-  padding: 40px;
-  animation: fadeInRight .9s ease;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  flex: 1 1 50%;
+
+  background: #f8fafc;
+
+  display: block;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  overscroll-behavior: auto;
+
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #c7c9d9
+    transparent;
+
+  animation: fadeInRight 0.9s ease;
 }
 
+/* =========================================================
+   SCROLLBAR
+========================================================= */
 
-/* ===========================
-Form Card
-=========================== */
+.register-right-panel::-webkit-scrollbar,
+.right-panel::-webkit-scrollbar {
+  width: 8px;
+}
 
-.form-container {
-  width: 100%;
-  max-width: 480px;
-  background: white;
-  padding: 45px;
+.register-right-panel::-webkit-scrollbar-track,
+.right-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.register-right-panel::-webkit-scrollbar-thumb,
+.right-panel::-webkit-scrollbar-thumb {
+  background: #c7c9d9;
+
   border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+}
+
+.register-right-panel::-webkit-scrollbar-thumb:hover,
+.right-panel::-webkit-scrollbar-thumb:hover {
+  background: #aeb1c4;
+}
+
+/* =========================================================
+   FORM CARD
+========================================================= */
+
+.register-form-container,
+.form-container {
+  width: calc(100% - 80px);
+
+  max-width: 480px;
+
+  margin: 32px auto 50px;
+
+  background: white;
+
+  padding: 44px;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 15px 40px rgba(15, 23, 42, 0.08);
+
   animation: fadeUp 1s ease;
-  transition: .35s;
+
+  transform: none;
+
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
+.register-form-container:hover,
 .form-container:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .12);
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.12);
 }
 
+/* =========================================================
+   FORM HEADER
+========================================================= */
 
-/* ===========================
-Headings
-=========================== */
-
+.register-form-header h2,
 .form-container h2 {
   font-size: 34px;
+
+  line-height: 1.2;
+
+  font-weight: 700;
+
   color: #111827;
+
   margin-bottom: 8px;
 }
 
-.form-container p {
-  color: #6B7280;
-  margin-bottom: 30px;
+.register-form-header p,
+.form-container > p {
+  color: #6b7280;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+
+  margin-bottom: 28px;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.register-form,
+form {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================================================
+   GENERAL ERROR
+========================================================= */
+
+.register-general-error,
+.general-error {
+  width: 100%;
+
+  padding: 11px 13px;
+
+  margin-bottom: 18px;
+
+  background: #fef2f2;
+
+  color: #b91c1c;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+
   line-height: 1.5;
 }
 
+/* =========================================================
+   SUCCESS
+========================================================= */
 
-/* ===========================
-Form
-=========================== */
+.success-message {
+  width: 100%;
 
-form {
-  display: flex;
-  flex-direction: column;
-}
+  padding: 11px 13px;
 
-
-/* ===========================
-Input Group
-=========================== */
-
-.input-group {
-  display: flex;
-  flex-direction: column;
   margin-bottom: 18px;
+
+  background: #f0fdf4;
+
+  color: #15803d;
+
+  border: 1px solid #bbf7d0;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+
+  line-height: 1.5;
 }
 
+/* =========================================================
+   INPUT GROUP
+========================================================= */
+
+.register-input-group,
+.input-group {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  margin-bottom: 16px;
+}
+
+.register-input-group label,
 .input-group label {
+  display: block;
+
+  width: 100%;
+
   margin-bottom: 8px;
-  color: #374151;
-  font-size: 15px;
+
+  color: #1f2937;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+
   font-weight: 500;
+
+  text-align: left;
 }
 
-.input-group input {
-  height: 52px;
-  border: 1px solid #E5E7EB;
+/* =========================================================
+   NORMAL INPUT
+========================================================= */
+
+.register-input-group > input,
+.input-group > input {
+  display: block;
+
+  width: 100%;
+
+  height: 54px;
+
+  border: 1px solid #dfe3ea;
+
   border-radius: 12px;
+
   padding: 0 16px;
-  font-size: 15px;
-  transition: .3s;
+
+  background: white;
+
+  color: #111827;
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 14px;
+
   outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.input-group input:focus {
-  border-color: #5B4BFF;
-  box-shadow: 0 0 0 4px rgba(91, 75, 255, .15);
+.register-input-group > input::placeholder,
+.input-group > input::placeholder {
+  color: #9ca3af;
 }
 
+.register-input-group > input:focus,
+.input-group > input:focus {
+  border-color: #5b4bff;
 
-/* ===========================
-Password Box
-=========================== */
+  box-shadow:
+    0 0 0 3px rgba(91, 75, 255, 0.12);
+}
 
+/* =========================================================
+   INPUT ERROR
+========================================================= */
+
+.register-input-group > input.input-error,
+.input-group > input.input-error {
+  border-color: #dc2626 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.error-message {
+  display: block;
+
+  color: #dc2626;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  margin-top: 5px;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   PASSWORD BOX
+========================================================= */
+
+.register-password-box,
 .password-box {
   position: relative;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  transition: .3s;
-}
 
-.password-box:focus-within {
-  border-color: #5B4BFF;
-  box-shadow: 0 0 0 4px rgba(91, 75, 255, .15);
-}
-
-.password-box input {
   width: 100%;
-  padding-right: 55px;
-  border: none;
-  box-shadow: none;
+  height: 54px;
+
+  border: 1px solid #dfe3ea;
+
+  border-radius: 12px;
+
+  background: white;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
+.register-password-box:focus-within,
+.password-box:focus-within {
+  border-color: #5b4bff;
+
+  box-shadow:
+    0 0 0 3px rgba(91, 75, 255, 0.12);
+}
+
+.register-password-box input,
+.password-box input {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  border: none;
+  outline: none;
+
+  border-radius: 12px;
+
+  padding: 0 48px 0 16px;
+
+  background: transparent;
+
+  color: #111827;
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 14px;
+}
+
+.register-password-box input::placeholder,
+.password-box input::placeholder {
+  color: #9ca3af;
+}
+
+.register-password-box input:focus,
 .password-box input:focus {
   border: none;
+
   box-shadow: none;
 }
 
+/* =========================================================
+   PASSWORD ERROR
+========================================================= */
+
+.register-password-box.password-error,
+.password-box.password-error {
+  border-color: #dc2626;
+
+  box-shadow:
+    0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+/* =========================================================
+   PASSWORD TOGGLE
+========================================================= */
+
+.register-password-toggle,
 .password-box button {
   position: absolute;
-  right: 15px;
+
   top: 50%;
+  right: 12px;
+
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  color: #6B7280;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border: none;
+
+  background: transparent;
+
+  color: #6b7280;
+
+  cursor: pointer;
+
+  font-size: 14px;
 }
 
+.register-password-toggle:hover,
 .password-box button:hover {
-  color: #5B4BFF;
+  color: #5b4bff;
 }
 
+.register-password-toggle:focus,
+.password-box button:focus {
+  outline: none;
+}
 
-/* ===========================
-Register Button
-=========================== */
+/* =========================================================
+   PASSWORD REQUIREMENTS
+========================================================= */
+
+.register-password-info {
+  width: 100%;
+
+  display: block;
+
+  margin: -2px 0 20px;
+
+  padding: 15px 16px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #dce1ec;
+
+  border-radius: 11px;
+
+  text-align: left;
+}
+
+.register-password-title {
+  width: 100%;
+
+  margin: 0 0 10px;
+
+  color: #1f2937;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  font-weight: 600;
+
+  text-align: left;
+}
+
+.register-requirements {
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+  display: block;
+
+  text-align: left;
+}
+
+.register-requirements li {
+  width: 100%;
+
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-columns: 14px minmax(0, 1fr);
+
+  column-gap: 8px;
+
+  align-items: start;
+
+  margin: 0 0 8px;
+
+  padding: 0;
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  line-height: 1.35;
+
+  font-weight: 500;
+
+  text-align: left;
+
+  list-style: none;
+}
+
+.register-requirements li:last-child {
+  margin-bottom: 0;
+}
+
+.requirement-icon {
+  width: 14px;
+  min-width: 14px;
+  height: 17px;
+
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  padding-top: 2px;
+
+  color: #9ca3af;
+
+  font-size: 8px;
+
+  line-height: 1;
+}
+
+.register-requirements li.valid .requirement-icon {
+  color: #16a34a;
+
+  font-size: 11px;
+}
+
+.requirement-text {
+  display: block;
+
+  width: 100%;
+
+  min-width: 0;
+
+  color: #6b7280;
+
+  text-align: left;
+
+  overflow-wrap: break-word;
+}
+
+.register-requirements li.valid .requirement-text {
+  color: #15803d;
+}
+
+/* =========================================================
+   PASSWORD MATCH
+========================================================= */
+
+.register-password-match {
+  width: 100%;
+
+  margin: -6px 0 16px;
+
+  padding: 8px 11px;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+
+  line-height: 1.4;
+
+  font-weight: 500;
+
+  text-align: left;
+}
+
+.register-password-match.success {
+  background: #f0fdf4;
+
+  color: #15803d;
+
+  border: 1px solid #bbf7d0;
+}
+
+.register-password-match.error {
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  border: 1px solid #fecaca;
+}
+
+/* =========================================================
+   REGISTER BUTTON
+========================================================= */
 
 .register-btn {
-  margin-top: 10px;
+  width: 100%;
+
   height: 54px;
+
+  margin-top: 2px;
+
   border: none;
+
   border-radius: 12px;
-  background: linear-gradient(135deg, #5B4BFF, #7B61FF);
+
+  background: linear-gradient(
+    135deg,
+    #5b4bff,
+    #7b61ff
+  );
+
   color: white;
-  font-size: 17px;
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 16px;
+
   font-weight: 600;
+
   cursor: pointer;
-  transition: .3s;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .register-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 25px rgba(91, 75, 255, .35);
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 22px rgba(91, 75, 255, 0.3);
 }
 
 .register-btn:disabled {
-  opacity: .65;
+  opacity: 0.65;
+
   cursor: not-allowed;
+
   transform: none;
+
   box-shadow: none;
 }
 
-.register-btn:disabled:hover {
-  transform: none;
-  box-shadow: none;
-}
+/* =========================================================
+   LOGIN LINK
+========================================================= */
 
-
-/* ===========================
-Login Link
-=========================== */
-
+.register-login-link,
 .login-link {
+  width: 100%;
+
+  margin: 22px 0 0;
+
+  color: #6b7280;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
   text-align: center;
-  margin-top: 25px;
-  font-size: 15px;
 }
 
+.register-login-link a,
 .login-link a {
-  color: #5B4BFF;
-  text-decoration: none;
+  color: #5b4bff;
+
   font-weight: 600;
+
+  text-decoration: none;
 }
 
+.register-login-link a:hover,
 .login-link a:hover {
   text-decoration: underline;
 }
 
+/* =========================================================
+   LAPTOP
+========================================================= */
 
-/* ===========================
-Validation
-=========================== */
+@media (max-width: 1200px) {
 
-.error-message {
-  display: block;
-  color: #dc2626;
-  font-size: 12px;
-  font-weight: 500;
-  margin-top: 5px;
-  line-height: 1.4;
-}
-
-.input-group input.input-error {
-  border-color: #dc2626 !important;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, .08);
-}
-
-.input-group input.input-error:focus {
-  border-color: #dc2626 !important;
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, .12) !important;
-}
-
-
-/* ===========================
-Password Validation
-=========================== */
-
-.password-box.password-error {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, .08);
-}
-
-.password-box.password-error:focus-within {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, .12);
-}
-
-
-/* ===========================
-General Error
-=========================== */
-
-.general-error {
-  width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 20px;
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-
-/* ===========================
-Success Message
-=========================== */
-
-.success-message {
-  width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 20px;
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-
-/* ===========================
-Responsive
-=========================== */
-
-@media (max-width: 1100px) {
-
+  .register-left-panel,
   .left-panel {
-    padding: 30px;
+    padding: 35px 40px;
   }
 
+  .register-logo h2,
+  .logo h2 {
+    font-size: 30px;
+  }
+
+  .register-hero-content h1,
   .hero-content h1 {
-    font-size: 40px;
+    font-size: 43px;
   }
 
+  .register-hero-content p,
   .hero-content p {
-    font-size: 16px;
+    font-size: 15px;
   }
 
+  .register-dashboard img,
+  .dashboard img {
+    width: 88%;
+
+    max-width: 500px;
+  }
+
+  .register-form-container,
   .form-container {
-    padding: 35px;
-  }
+    width: calc(100% - 56px);
 
+    max-width: 480px;
+
+    padding: 34px 36px;
+
+    margin-top: 28px;
+
+    margin-bottom: 40px;
+  }
 }
 
+/* =========================================================
+   TABLET
+========================================================= */
 
 @media (max-width: 900px) {
 
+  .register-page,
   .container-main {
-    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+
+    display: block;
+
+    overflow: hidden;
   }
 
+  .register-left-panel,
   .left-panel {
     display: none;
   }
 
+  .register-right-panel,
   .right-panel {
     width: 100%;
-    min-height: 100vh;
+
+    height: 100%;
+
+    display: block;
+
+    overflow-x: hidden;
+
+    overflow-y: auto;
+
+    padding: 0;
   }
 
+  .register-form-container,
   .form-container {
-    max-width: 500px;
-  }
+    width: calc(100% - 40px);
 
+    max-width: 520px;
+
+    margin: 28px auto 40px;
+
+    padding: 32px;
+  }
 }
 
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 600px) {
 
+  .register-right-panel,
   .right-panel {
-    padding: 20px;
+    width: 100%;
+
+    height: 100%;
+
+    overflow-x: hidden;
+
+    overflow-y: auto;
   }
 
+  .register-form-container,
   .form-container {
-    padding: 25px;
+    width: calc(100% - 24px);
+
+    max-width: none;
+
+    margin: 18px auto 35px;
+
+    padding: 25px 20px;
+
+    border-radius: 16px;
   }
 
+  .register-form-header h2,
   .form-container h2 {
-    font-size: 28px;
+    font-size: 27px;
   }
 
+  .register-form-header p,
+  .form-container > p {
+    font-size: 12px;
+
+    margin-bottom: 23px;
+  }
+
+  .register-input-group,
+  .input-group {
+    margin-bottom: 15px;
+  }
+
+  .register-input-group label,
+  .input-group label {
+    font-size: 12px;
+  }
+
+  .register-input-group > input,
+  .input-group > input {
+    height: 49px;
+
+    font-size: 13px;
+
+    border-radius: 10px;
+  }
+
+  .register-password-box,
+  .password-box {
+    height: 49px;
+
+    border-radius: 10px;
+  }
+
+  .register-password-box input,
+  .password-box input {
+    height: 47px;
+
+    font-size: 13px;
+  }
+
+  .register-password-info {
+    padding: 14px;
+
+    margin-bottom: 18px;
+  }
+
+  .register-password-title {
+    font-size: 12px;
+
+    margin-bottom: 9px;
+  }
+
+  .register-requirements li {
+    grid-template-columns: 13px minmax(0, 1fr);
+
+    column-gap: 7px;
+
+    font-size: 11.5px;
+
+    line-height: 1.4;
+
+    margin-bottom: 7px;
+  }
+
+  .requirement-icon {
+    width: 13px;
+
+    min-width: 13px;
+  }
+
+  .register-btn {
+    height: 50px;
+
+    font-size: 14px;
+  }
+
+  .register-login-link,
+  .login-link {
+    font-size: 12px;
+
+    margin-top: 18px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .register-form-container,
+  .form-container {
+    width: calc(100% - 18px);
+
+    margin-top: 12px;
+
+    margin-bottom: 30px;
+
+    padding: 22px 16px;
+  }
+
+  .register-form-header h2,
+  .form-container h2 {
+    font-size: 24px;
+  }
+
+  .register-form-header p,
+  .form-container > p {
+    font-size: 11px;
+  }
+
+  .register-password-info {
+    padding: 12px;
+  }
+
+  .register-requirements li {
+    font-size: 11px;
+  }
+
+  .register-btn {
+    height: 48px;
+  }
+}
+
+/* =========================================================
+   SHORT SCREENS
+========================================================= */
+
+@media (max-height: 750px) {
+
+  .register-right-panel,
+  .right-panel {
+    display: block;
+
+    overflow-y: auto;
+  }
+
+  .register-form-container,
+  .form-container {
+    margin-top: 20px;
+
+    margin-bottom: 35px;
+  }
+}
+
+/* =========================================================
+   VERY SHORT / ZOOMED
+========================================================= */
+
+@media (max-height: 600px) {
+
+  .register-right-panel,
+  .right-panel {
+    display: block;
+
+    height: 100%;
+
+    overflow-x: hidden;
+
+    overflow-y: auto;
+
+    align-items: initial;
+
+    justify-content: initial;
+  }
+
+  .register-form-container,
+  .form-container {
+    margin-top: 15px;
+
+    margin-bottom: 30px;
+  }
 }

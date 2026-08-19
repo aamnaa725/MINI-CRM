@@ -1,489 +1,287 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-import dashboard from "../../assets/dashboard.png";
-import avatar1 from "../../assets/1.png";
-import avatar2 from "../../assets/2.png";
-import avatar3 from "../../assets/3.png";
-import avatar4 from "../../assets/4.png";
-
-import "../styles/ResetPassword.css";
-
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import AuthLayout from "../components/AuthLayout";
+import Button from "../components/Button";
 
 function ResetPassword() {
-
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+  const mode = params.get("mode") || sessionStorage.getItem("otpFlow") || "reset";
+  const urlEmail = params.get("email");
+  const savedEmail = sessionStorage.getItem("resetEmail");
+  const email = urlEmail || savedEmail || "";
 
   const [otp, setOtp] = useState("");
-
   const [loading, setLoading] = useState(false);
-
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
-
   const [message, setMessage] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(60);
 
+  useEffect(() => {
+    if (email) {
+      sessionStorage.setItem("resetEmail", email);
+    }
+    if (mode) {
+      sessionStorage.setItem("otpFlow", mode);
+    }
+  }, [email, mode]);
 
-  // ======================================================
-  // OTP INPUT
-  // ======================================================
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setResendCooldown((previous) => (previous > 0 ? previous - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleOtpChange = (e) => {
-
     const value = e.target.value;
 
-    // Only numbers
     if (!/^\d*$/.test(value)) {
       return;
     }
 
-    // Maximum 6 digits
     if (value.length > 6) {
       return;
     }
 
     setOtp(value);
-
     setError("");
+    setMessage("");
   };
 
-
-  // ======================================================
-  // VERIFY OTP
-  // ======================================================
+  const handleEditEmail = () => {
+    if (!email) {
+      navigate("/forgot-password");
+      return;
+    }
+    navigate(`/forgot-password?email=${encodeURIComponent(email)}`);
+  };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-
     setError("");
     setMessage("");
 
-
-    // Check OTP
     if (otp.length !== 6) {
-
-      setError("Please enter the 6-digit OTP");
-
+      setError("Please enter the 6-digit OTP.");
       return;
     }
-
-
-    // Get email saved from Forgot Password page
-    const email = sessionStorage.getItem("resetEmail");
-
 
     if (!email) {
-
-      setError(
-        "Reset session expired. Please request a new OTP."
-      );
-
+      setError("Email is missing. Please start the process again.");
       return;
     }
 
-
     try {
-
       setLoading(true);
 
+      const endpoint = mode === "signup" ? "/auth/verify-otp" : "/auth/verify-reset-otp";
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/verify-otp`,
+        `${import.meta.env.VITE_API_URL}${endpoint}`,
         {
           method: "POST",
-
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify({
-            email: email,
-            otp: otp,
-          }),
+          body: JSON.stringify({ email, otp }),
         }
       );
 
+      let data = {};
 
-      const data = await response.json();
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
-
-      // Backend error
       if (!response.ok) {
-
-        setError(
-          data.message || "Invalid OTP"
-        );
-
+        setError(data.message || "Invalid OTP.");
         return;
       }
 
+      if (mode === "signup") {
+        sessionStorage.removeItem("otpFlow");
+        sessionStorage.removeItem("resetEmail");
+        sessionStorage.removeItem("resetPasswordVerified");
 
-      // OTP verified
-      setMessage(
-        data.message || "OTP verified successfully"
-      );
+        setMessage("Email verified successfully. Redirecting to login...");
 
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1000);
+        return;
+      }
 
-      // Store verification status
-      sessionStorage.setItem(
-        "otpVerified",
-        "true"
-      );
+      setMessage("OTP verified successfully. Redirecting...");
 
-
-      // Redirect to change password
       setTimeout(() => {
-
-        navigate("/change-password");
-
+        navigate(`/change-password?email=${encodeURIComponent(email)}`, {
+          replace: true,
+        });
       }, 800);
-
-
     } catch (error) {
-
-      console.error(
-        "OTP verification error:",
-        error
-      );
-
-      setError(
-        "Unable to connect to server. Please try again."
-      );
-
+      console.error("OTP verification error:", error);
+      setError("Unable to connect to server. Please try again.");
     } finally {
-
       setLoading(false);
-
     }
-
   };
-
-
-  // ======================================================
-  // RESEND OTP
-  // ======================================================
 
   const handleResend = async () => {
+    if (resending || resendCooldown > 0) {
+      return;
+    }
 
     setError("");
     setMessage("");
 
-
-    const email = sessionStorage.getItem("resetEmail");
-
-
     if (!email) {
-
-      setError(
-        "Please go back and enter your email again."
-      );
-
+      setError("Email is missing. Please start again.");
       return;
     }
 
-
     try {
+      setResending(true);
 
-      setLoading(true);
-
+      const endpoint = mode === "signup" ? "/auth/resend-otp" : "/auth/forgot-password";
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+        `${import.meta.env.VITE_API_URL}${endpoint}`,
         {
           method: "POST",
-
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify({
-            email: email,
-          }),
+          body: JSON.stringify({ email }),
         }
       );
 
+      let data = {};
 
-      const data = await response.json();
-
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
       if (!response.ok) {
+        setError(data.message || "Unable to resend OTP.");
 
-        setError(
-          data.message || "Unable to resend OTP"
-        );
-
+        if (data.remainingSeconds) {
+          setResendCooldown(Number(data.remainingSeconds));
+        }
         return;
       }
 
-
-      // Development testing only
-      console.log("New OTP:", data.otp);
-
-
-      setMessage(
-        "A new OTP has been generated."
-      );
-
-
       setOtp("");
-
-
+      setMessage(data.message || "A new OTP has been sent.");
+      setResendCooldown(60);
     } catch (error) {
-
-      console.error(
-        "Resend OTP error:",
-        error
-      );
-
-      setError(
-        "Unable to connect to server."
-      );
-
+      console.error("Resend OTP error:", error);
+      setError("Unable to connect to server.");
     } finally {
-
-      setLoading(false);
-
+      setResending(false);
     }
-
   };
 
+  const title = "Verify OTP";
+  const description =
+    mode === "signup"
+      ? "Enter the 6-digit code sent to your email to verify your account."
+      : "Enter the 6-digit code sent to your email to reset your password.";
 
   return (
+    <AuthLayout
+      title={
+        <>
+          Verify your<br />account securely
+        </>
+      }
+      subtitle="Enter the verification code sent to your registered email address."
+    >
+      <div className="auth-form-header">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
 
-    <div className="container-main">
-
-
-      {/* ==================================================
-          LEFT PANEL
-      ================================================== */}
-
-      <div className="left-panel">
-
-
-        <div className="logo">
-
-          <h2>
-            Mini CRM
-          </h2>
-
+      {email && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', background: '#f8f9fa', padding: '10px 15px', borderRadius: '8px' }}>
+          <span style={{ fontSize: '14px', color: '#1f2937', fontWeight: '500' }}>{email}</span>
+          <button
+            type="button"
+            onClick={handleEditEmail}
+            style={{ background: 'none', border: 'none', color: '#5b4bff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+          >
+            Edit
+          </button>
         </div>
+      )}
 
-
-        <div className="hero-content">
-
-          <h1>
-            Verify your
-            <br />
-            account securely
-          </h1>
-
-
-          <p>
-            Enter the verification code sent
-            to your registered email address.
-          </p>
-
+      {message && (
+        <div className="auth-success-message">
+          {message}
         </div>
+      )}
 
+      {error && (
+        <div className="auth-error-message">
+          {error}
+        </div>
+      )}
 
-        <div className="dashboard">
-
-          <img
-            src={dashboard}
-            alt="CRM Dashboard"
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="auth-input-group">
+          <label>Verification Code</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="Enter 6-digit OTP"
+            value={otp}
+            onChange={handleOtpChange}
+            maxLength={6}
+            required
           />
-
         </div>
 
+        <Button type="submit" disabled={loading}>
+          {loading ? "Verifying..." : "Verify OTP"}
+        </Button>
 
-        <div className="trusted-teams">
-
-
-          <div className="avatars">
-
-            <img
-              src={avatar1}
-              alt="user"
-            />
-
-            <img
-              src={avatar2}
-              alt="user"
-            />
-
-            <img
-              src={avatar3}
-              alt="user"
-            />
-
-            <img
-              src={avatar4}
-              alt="user"
-            />
-
-          </div>
-
-
-          <div className="team-text">
-
-            <h3>
-              Trusted by 2,000+ Teams
-            </h3>
-
-            <p>
-              Helping businesses increase
-              productivity every day.
-            </p>
-
-          </div>
-
-        </div>
-
-
-      </div>
-
-
-      {/* ==================================================
-          RIGHT PANEL
-      ================================================== */}
-
-      <div className="right-panel">
-
-
-        <div className="form-container">
-
-
-          <h2>
-            Verify OTP
-          </h2>
-
-
-          <p>
-            Enter the 6-digit verification code
-            sent to your email.
-          </p>
-
-
-          {/* SUCCESS MESSAGE */}
-
-          {message && (
-
-            <div className="success-message">
-
-              {message}
-
-            </div>
-
-          )}
-
-
-          {/* ERROR MESSAGE */}
-
-          {error && (
-
-            <div className="error-message">
-
-              {error}
-
-            </div>
-
-          )}
-
-
-          <form onSubmit={handleSubmit}>
-
-
-            {/* OTP */}
-
-            <div className="input-group">
-
-              <label>
-                Verification Code
-              </label>
-
-
-              <input
-                type="text"
-                name="otp"
-                inputMode="numeric"
-                placeholder="Enter 6-digit OTP"
-                value={otp}
-                onChange={handleOtpChange}
-                maxLength={6}
-                autoComplete="one-time-code"
-                required
-              />
-
-            </div>
-
-
-            {/* VERIFY */}
-
+        <div className="auth-otp-resend">
+          Didn't receive the code?{" "}
+          {resendCooldown > 0 ? (
+            <span style={{ color: '#9ca3af' }}>Resend in {resendCooldown}s</span>
+          ) : (
             <button
-              type="submit"
-              className="register-btn"
-              disabled={loading}
+              type="button"
+              className="resend-btn"
+              onClick={handleResend}
+              disabled={resending}
             >
-
-              {loading
-                ? "Verifying..."
-                : "Verify OTP"
-              }
-
+              {resending ? "Sending..." : "Resend OTP"}
             </button>
-
-
-            {/* RESEND */}
-
-            <p className="otp-resend">
-
-              Didn't receive the code?
-
-              {" "}
-
-              <button
-                type="button"
-                className="resend-btn"
-                onClick={handleResend}
-                disabled={loading}
-              >
-
-                Resend OTP
-
-              </button>
-
-            </p>
-
-
-            {/* LOGIN */}
-
-            <p className="login-link">
-
-              Remember your password?
-
-              {" "}
-
-              <Link to="/login">
-                Login
-              </Link>
-
-            </p>
-
-
-          </form>
-
-
+          )}
         </div>
 
-
-      </div>
-
-
-    </div>
-
+        <p className="auth-login-link">
+          Remember your password? <Link to="/login" replace>Login</Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
-
 }
-
 
 export default ResetPassword;
