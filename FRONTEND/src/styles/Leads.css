@@ -1,0 +1,142 @@
+/* =========================================================
+   STAT GRID (3-up on the Leads page)
+========================================================= */
+
+.leads-stats-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+
+/* =========================================================
+   FILTER CHIPS
+========================================================= */
+
+.leads-filter-bar {
+  display: flex;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  padding: 18px 18px 0 18px;
+}
+
+.filter-chip {
+  height: 32px;
+
+  padding: 0 16px;
+
+  border: 1px solid #e5e7eb;
+
+  background: white;
+
+  border-radius: 20px;
+
+  color: #374151;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.filter-chip:hover {
+  border-color: #5B4BFF;
+
+  color: #5B4BFF;
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, #5B4BFF, #7B61FF);
+
+  border-color: transparent;
+
+  color: white;
+}
+
+
+/* =========================================================
+   FULL LEADS TABLE
+========================================================= */
+
+.leads-table-card {
+  padding: 0 0 20px 0;
+}
+
+.full-leads-table {
+  padding: 18px;
+}
+
+.full-leads-table .table-head,
+.full-leads-table .lead-row {
+  grid-template-columns: 1fr 1fr 1.3fr 1fr 0.8fr;
+}
+
+.full-leads-table[data-with-owner="true"] .table-head,
+.full-leads-table[data-with-owner="true"] .lead-row {
+  grid-template-columns: 1fr 1fr 1.3fr 0.9fr 1fr 0.8fr;
+}
+
+.leads-empty {
+  padding: 30px 12px;
+
+  text-align: center;
+
+  color: #9ca3af;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   EXTRA STATUS COLORS
+========================================================= */
+
+.negotiation-status {
+  background: #fdeaea;
+
+  color: #d64545;
+}
+
+.won-status {
+  background: #e5f6ef;
+
+  color: #14a66a;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .leads-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .full-leads-table .table-head,
+  .full-leads-table .lead-row,
+  .full-leads-table[data-with-owner="true"] .table-head,
+  .full-leads-table[data-with-owner="true"] .lead-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .full-leads-table .table-head span:nth-child(n+3),
+  .full-leads-table .lead-row span:nth-child(n+3) {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .leads-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+}

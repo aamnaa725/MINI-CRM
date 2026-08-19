@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="x-apple-disable-message-reformatting" />
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+<meta name="color-scheme" content="light" />
+<meta name="supported-color-schemes" content="light" />
+<title>Verify Your Email</title>
+<!--[if mso]>
+<noscript>
+  <xml>
+    <o:OfficeDocumentSettings>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+  </xml>
+</noscript>
+<style>
+  table { border-collapse: collapse; }
+</style>
+<![endif]-->
+<style>
+  @media screen and (max-width: 600px) {
+    .email-wrapper { width:100% !important; }
+    .email-outer-pad { padding:24px 12px !important; }
+    .header-pad { padding:28px 24px !important; }
+    .body-pad { padding:32px 24px 24px 24px !important; }
+    .footer-pad { padding:20px 24px !important; }
+    .heading-text { font-size:22px !important; }
+    .otp-box-pad { padding:16px 20px !important; }
+    .otp-code { font-size:28px !important; letter-spacing:6px !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background-color:#f7f8fc; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+    Your Mini CRM verification code is {{OTP_CODE}}. It expires in {{EXPIRY_MINUTES}} minutes.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f7f8fc;">
+    <tr>
+      <td class="email-outer-pad" align="center" style="padding:40px 16px;">
+
+        <table role="presentation" width="480" class="email-wrapper" cellpadding="0" cellspacing="0" border="0" style="width:480px; max-width:100%; background-color:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.08);">
+
+          <!-- HEADER / BRAND (mirrors .left-panel gradient) -->
+          <tr>
+            <td class="header-pad" align="center" style="background-color:#5B4BFF; background-image:linear-gradient(135deg, #5B4BFF, #7B61FF); padding:36px 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-size:26px; line-height:26px; font-weight:700; color:#ffffff; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+                    Mini&nbsp;CRM
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- BODY / FORM CARD (mirrors .form-container) -->
+          <tr>
+            <td class="body-pad" style="padding:45px 40px 30px 40px;">
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom:8px;">
+                    <span class="heading-text" style="font-size:26px; font-weight:700; color:#111827; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+                      Verify Your Email
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-bottom:30px;">
+                    <span style="font-size:15px; line-height:1.6; color:#6B7280; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+                      Hi {{USER_NAME}}, use the code below to verify your identity and continue securely into your Mini CRM account.
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- OTP CODE BOX (mirrors .input-group input focus state) -->
+                <tr>
+                  <td align="center" style="padding-bottom:22px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F4FF; border:1px solid #5B4BFF; border-radius:12px; max-width:100%;">
+                      <tr>
+                        <td class="otp-box-pad" style="padding:18px 36px; font-size:36px; font-weight:700; letter-spacing:10px; color:#5B4BFF; font-family:'Poppins', Arial, Helvetica, sans-serif; white-space:nowrap;">
+                          <span class="otp-code">{{OTP_CODE}}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td align="center" style="padding-bottom:28px;">
+                    <span style="font-size:13px; color:#6B7280; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+                      This code expires in <strong style="color:#374151;">{{EXPIRY_MINUTES}} minutes</strong>. Do not share it with anyone.
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- DIVIDER -->
+                <tr>
+                  <td style="border-top:1px solid #E5E7EB; padding-top:20px;">
+                    <span style="font-size:13px; line-height:1.6; color:#9CA3AF; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+                      Didn't request this code? You can safely ignore this email — your account is still secure.
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td class="footer-pad" align="center" style="background-color:#f7f8fc; padding:24px 40px;">
+              <span style="font-size:12px; color:#9CA3AF; font-family:'Poppins', Arial, Helvetica, sans-serif;">
+                &copy; {{CURRENT_YEAR}} Mini CRM &middot; All rights reserved
+              </span>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

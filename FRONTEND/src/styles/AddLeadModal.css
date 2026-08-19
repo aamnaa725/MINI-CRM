@@ -1,0 +1,261 @@
+/* =========================================================
+   BACKDROP
+========================================================= */
+
+.modal-backdrop {
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(17, 24, 39, 0.55);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 1000;
+
+  animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================================
+   MODAL CARD
+========================================================= */
+
+.lead-modal {
+  width: 100%;
+
+  max-width: 560px;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 30px 32px;
+
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+
+  animation: modalPopIn 0.25s ease;
+}
+
+.lead-modal-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+}
+
+.lead-modal-header h3 {
+  font-size: 20px;
+
+  font-weight: 700;
+
+  color: #111827;
+}
+
+.modal-close-btn {
+  width: 32px;
+
+  height: 32px;
+
+  border: none;
+
+  background: #f3f4f6;
+
+  border-radius: 50%;
+
+  color: #6b7280;
+
+  font-size: 18px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: #e5e7eb;
+
+  color: #111827;
+}
+
+
+/* =========================================================
+   FORM GRID
+========================================================= */
+
+.lead-modal-grid {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 16px;
+}
+
+.lead-field {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.lead-field-full {
+  grid-column: 1 / -1;
+}
+
+.lead-field label {
+  margin-bottom: 7px;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  color: #374151;
+}
+
+.field-optional {
+  font-weight: 400;
+
+  color: #9ca3af;
+}
+
+.lead-field input,
+.lead-field select {
+  height: 46px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 10px;
+
+  padding: 0 14px;
+
+  font-size: 14px;
+
+  font-family: inherit;
+
+  color: #111827;
+
+  outline: none;
+
+  transition: 0.2s;
+
+  background: white;
+}
+
+.lead-field input:focus,
+.lead-field select:focus {
+  border-color: #5B4BFF;
+
+  box-shadow: 0 0 0 4px rgba(91, 75, 255, 0.12);
+}
+
+.field-error {
+  margin-top: 6px;
+
+  font-size: 11px;
+
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.lead-modal-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 26px;
+}
+
+.modal-cancel-btn {
+  height: 44px;
+
+  padding: 0 22px;
+
+  border: 1px solid #e5e7eb;
+
+  background: white;
+
+  border-radius: 10px;
+
+  color: #374151;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.modal-cancel-btn:hover {
+  background: #f9fafb;
+
+  border-color: #d1d5db;
+}
+
+.lead-modal-actions .add-lead-btn {
+  height: 44px;
+
+  padding: 0 24px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .lead-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lead-modal {
+    padding: 24px 20px;
+  }
+
+}
