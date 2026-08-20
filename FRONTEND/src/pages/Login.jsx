@@ -79,7 +79,7 @@ function Login() {
     const email = formData.email.trim().toLowerCase();
 
     if (!email) {
-      navigate("/forgot-password");
+      setError("Please enter your email address first.");
       return;
     }
 
