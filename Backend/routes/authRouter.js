@@ -1176,15 +1176,17 @@ authRouter.post(
           );
       }
 
+      // Clear any previous OTP before issuing a new one
+      user.resetOtp = null;
+      user.resetOtpExpires = null;
+      user.otpAttempts = 0;
+
       // ----------------------------------------------
       // Generate new OTP
       // ----------------------------------------------
 
-      const otp =
-        generateOtp();
-
-      const otpHash =
-        hashOtp(otp);
+      const otp = generateOtp();
+      const otpHash = hashOtp(otp);
 
       user.resetOtp =
         otpHash;

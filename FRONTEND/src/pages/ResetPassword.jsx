@@ -145,6 +145,7 @@ function ResetPassword() {
 
     setError("");
     setMessage("");
+    setOtp(""); // Clear OTP immediately when resend starts
 
     if (!email) {
       setError("Email is missing. Please start again.");
@@ -185,7 +186,6 @@ function ResetPassword() {
         return;
       }
 
-      setOtp("");
       setMessage(data.message || "A new OTP has been sent.");
       setResendCooldown(60);
     } catch (error) {
